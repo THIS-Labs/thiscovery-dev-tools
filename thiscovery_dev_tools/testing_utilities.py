@@ -95,14 +95,6 @@ class BaseTestCase(unittest.TestCase):
             del entity_dict[key]
 
 
-@unittest.skipIf(not tests_running_on_aws(), "Testing are using local methods and this test only makes sense if calling an AWS API endpoint")
-class AlwaysOnAwsTestCase(BaseTestCase):
-    """
-    Skips tests if tests are running locally
-    """
-    pass
-
-
 def _aws_request(method, url, params=None, data=None, aws_api_key=None):
     return utils.aws_request(method, url, os.environ.get('AWS_TEST_API'), params=params, data=data, aws_api_key=aws_api_key)
 
