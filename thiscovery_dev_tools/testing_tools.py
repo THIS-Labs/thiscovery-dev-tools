@@ -19,6 +19,7 @@ import os
 import unittest
 import uuid
 from dateutil import parser
+from http import HTTPStatus
 
 import thiscovery_lib.utilities as utils
 from thiscovery_lib.dynamodb_utilities import Dynamodb
@@ -93,6 +94,31 @@ class BaseTestCase(unittest.TestCase):
     def remove_dict_items_to_be_ignored_by_tests(entity_dict, list_of_keys):
         for key in list_of_keys:
             del entity_dict[key]
+
+
+@unittest.skipIf(not tests_running_on_aws(), "Running tests using local methods and this test only makes sense if calling an AWS API endpoint")
+class TestApiEndpoints(BaseTestCase):
+    blank_api_key = ''
+    invalid_api_key = '3c907908-44a7-490a-9661-3866b3732d22'
+    logger = utils.get_logger()
+
+    def _common_assertion(self, expected_status, request_verb, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
+        for key in [self.blank_api_key, self.invalid_api_key]:
+            self.logger.info(f'Key: {key}')
+            result = _test_request(request_verb, local_method, aws_url, path_parameters=path_parameters,
+                                   querystring_parameters=querystring_parameters, request_body=request_body, aws_api_key=key)
+            result_status = result['statusCode']
+            self.assertEqual(expected_status, result_status)
+
+    def check_api_is_restricted(self, request_verb, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
+        expected_status = HTTPStatus.FORBIDDEN
+        self._common_assertion(expected_status, request_verb, local_method, aws_url, path_parameters=path_parameters,
+                               querystring_parameters=querystring_parameters, request_body=request_body)
+
+    def check_api_is_public(self, request_verb, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
+        expected_status = HTTPStatus.OK
+        self._common_assertion(expected_status, request_verb, local_method, aws_url, path_parameters=path_parameters,
+                               querystring_parameters=querystring_parameters, request_body=request_body)
 
 
 def _aws_request(method, url, params=None, data=None, aws_api_key=None):
