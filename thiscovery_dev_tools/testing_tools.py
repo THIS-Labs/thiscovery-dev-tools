@@ -29,7 +29,11 @@ def tests_running_on_aws():
     """
     Checks if tests are calling AWS API endpoints
     """
-    test_on_aws = os.environ.get('TEST_ON_AWS')
+    try:
+        test_on_aws = os.environ['TEST_ON_AWS']
+    except KeyError:
+        raise utils.DetailedValueError('TEST_ON_AWS environment variable not defined', {})
+
     if test_on_aws.lower() == 'true':
         return True
     elif test_on_aws.lower() == 'false':
