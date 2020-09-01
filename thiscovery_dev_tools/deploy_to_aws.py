@@ -34,22 +34,14 @@ class AwsDeployer:
 
     @staticmethod
     def get_environment_variables():
-        secrets_namespace = None
-        stackery_credentials = None
-        slack_webhooks = None
-        for env_var, env_var_name, json_format in [
-            (secrets_namespace, 'SECRETS_NAMESPACE', False),
-            (stackery_credentials, 'STACKERY_CREDENTIALS', True),
-            (slack_webhooks, 'SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS', True)
-        ]:
-            try:
-                env_var = os.environ[env_var_name]
-            except KeyError:
-                raise utils.DetailedValueError(f'Environment variable {env_var_name} not set', {})
-            if json_format:
-                env_var = json.loads(env_var)
+        try:
+            secrets_namespace = os.environ['SECRETS_NAMESPACE']
+            stackery_credentials = os.environ['STACKERY_CREDENTIALS']
+            slack_webhooks = os.environ['SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS']
+        except KeyError as err:
+            raise utils.DetailedValueError('Environment variable not set', {'KeyError': err.__repr__()})
         environment = utils.namespace2name(secrets_namespace)
-        return environment, stackery_credentials, slack_webhooks
+        return environment, json.loads(stackery_credentials), json.loads(slack_webhooks)
 
     def slack_message(self, message=None):
         if not message:
