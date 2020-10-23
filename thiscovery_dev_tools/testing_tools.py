@@ -106,11 +106,9 @@ class BaseTestCase(unittest.TestCase):
 class TestApiEndpoints(BaseTestCase):
     blank_api_key = ''
     invalid_api_key = '3c907908-44a7-490a-9661-3866b3732d22'
-    logger = utils.get_logger()
 
     def _common_assertion(self, expected_status, request_verb, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
         for key in [self.blank_api_key, self.invalid_api_key]:
-            self.logger.info(f'Key: {key}')
             result = _test_request(request_verb, local_method, aws_url, path_parameters=path_parameters,
                                    querystring_parameters=querystring_parameters, request_body=request_body, aws_api_key=key)
             result_status = result['statusCode']
