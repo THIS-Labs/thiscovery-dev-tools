@@ -18,6 +18,7 @@
 import os
 import unittest
 import uuid
+import yaml
 from dateutil import parser
 from http import HTTPStatus
 
@@ -128,6 +129,51 @@ class TestApiEndpoints(BaseTestCase):
     def check_api_is_public(self, request_verb, aws_url, expected_status=HTTPStatus.OK, path_parameters=None, querystring_parameters=None, request_body=None):
         self._common_assertion(expected_status, request_verb, aws_url, path_parameters=path_parameters,
                                querystring_parameters=querystring_parameters, request_body=request_body)
+
+
+# region yaml constructors for stackery tags
+class GetAtt(yaml.YAMLObject):
+    yaml_tag = '!GetAtt'
+
+    def __init__(self, val):
+        self.val = val
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return cls(node.value)
+
+
+class Sub(GetAtt):
+    yaml_tag = '!Sub'
+
+
+class Select(GetAtt):
+    yaml_tag = '!Select'
+
+
+class Ref(GetAtt):
+    yaml_tag = '!Ref'
+# endregion
+
+
+class TestSecurityOfEndpointsDefinedInTemplateYaml(BaseTestCase):
+    @classmethod
+    def setUpClass(cls, template_file_path, public_endpoints):
+        """
+        Args:
+            template_file_path:
+            public_endpoints (list): list of tuples specifying endpoint url and request verb
+                                      of each public endpoint defined in template.yaml (e.g.
+                                        [
+                                            ('/v1/ping', 'get'),
+                                            ('/v1/raise-error', 'post'),
+                                            ('/v1/log-request', 'post'),
+                                        ]
+        Returns:
+        """
+        super().setUpClass()
+        with open(template_file_path) as f:
+            cls.t_dict = yaml.load(f, Loader=yaml.Loader)
 
 
 def _aws_request(method, url, params=None, data=None, aws_api_key=None):
