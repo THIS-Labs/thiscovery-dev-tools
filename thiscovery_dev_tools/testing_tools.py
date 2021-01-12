@@ -125,8 +125,7 @@ class TestApiEndpoints(BaseTestCase):
         self._common_assertion(expected_status, request_verb, aws_url, path_parameters=path_parameters,
                                querystring_parameters=querystring_parameters, request_body=request_body)
 
-    def check_api_is_public(self, request_verb, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
-        expected_status = HTTPStatus.OK
+    def check_api_is_public(self, request_verb, aws_url, expected_status=HTTPStatus.OK, path_parameters=None, querystring_parameters=None, request_body=None):
         self._common_assertion(expected_status, request_verb, aws_url, path_parameters=path_parameters,
                                querystring_parameters=querystring_parameters, request_body=request_body)
 
