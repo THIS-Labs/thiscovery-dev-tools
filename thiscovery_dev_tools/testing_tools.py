@@ -157,23 +157,29 @@ class Ref(GetAtt):
 
 
 class TestSecurityOfEndpointsDefinedInTemplateYaml(BaseTestCase):
+    public_endpoints = list()
+
     @classmethod
-    def setUpClass(cls, template_file_path, public_endpoints):
-        """
-        Args:
-            template_file_path:
-            public_endpoints (list): list of tuples specifying endpoint url and request verb
-                                      of each public endpoint defined in template.yaml (e.g.
-                                        [
-                                            ('/v1/ping', 'get'),
-                                            ('/v1/raise-error', 'post'),
-                                            ('/v1/log-request', 'post'),
-                                        ]
-        Returns:
-        """
+    def setUpClass(cls, template_file_path):
         super().setUpClass()
         with open(template_file_path) as f:
             cls.t_dict = yaml.load(f, Loader=yaml.Loader)
+
+    def check_defined_endpoints_are_secure(self):
+        endpoint_counter = 0
+        api_paths = self.t_dict['Resources']['CoreAPI']['Properties']['DefinitionBody']['paths']
+        for url, value in api_paths.items():
+            for verb in ['delete', 'get', 'head', 'patch', 'post', 'put']:
+                endpoint_config = value.get(verb)
+                if endpoint_config:
+                    endpoint_counter += 1
+                    self.logger.info(f'Found endpoint {verb.upper()} {url} in template.yaml. Checking if it is secure',
+                                     extra={'endpoint_config': endpoint_config})
+                    if (url, verb) in self.public_endpoints:
+                        self.assertIsNone(endpoint_config.get('security'))
+                    else:
+                        self.assertEqual([{'api_key': []}], endpoint_config.get('security'))
+        self.logger.info(f'The configuration of {endpoint_counter} endpoints in template.yaml is as expected')
 
 
 def _aws_request(method, url, params=None, data=None, aws_api_key=None):
