@@ -160,14 +160,15 @@ class TestSecurityOfEndpointsDefinedInTemplateYaml(BaseTestCase):
     public_endpoints = list()
 
     @classmethod
-    def setUpClass(cls, template_file_path):
+    def setUpClass(cls, template_file_path, api_resource_name='CoreAPI'):
         super().setUpClass()
         with open(template_file_path) as f:
             cls.t_dict = yaml.load(f, Loader=yaml.Loader)
+        cls.api_resource_name = api_resource_name
 
     def check_defined_endpoints_are_secure(self):
         endpoint_counter = 0
-        api_paths = self.t_dict['Resources']['CoreAPI']['Properties']['DefinitionBody']['paths']
+        api_paths = self.t_dict['Resources'][self.api_resource_name]['Properties']['DefinitionBody']['paths']
         for url, value in api_paths.items():
             for verb in ['delete', 'get', 'head', 'patch', 'post', 'put']:
                 endpoint_config = value.get(verb)
