@@ -221,10 +221,17 @@ def _test_request(request_method, local_method, aws_url, path_parameters=None, q
         return local_method(event, correlation_id)
 
 
-def test_get(local_method, aws_url, path_parameters=None, querystring_parameters=None, aws_api_key=None, correlation_id=None):
-    return _test_request('GET', local_method, aws_url, path_parameters=path_parameters,
-                         querystring_parameters=querystring_parameters, aws_api_key=aws_api_key, correlation_id=correlation_id)
-
+def test_get(local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None, aws_api_key=None, correlation_id=None):
+    return _test_request(
+        request_method='GET',
+        local_method=local_method,
+        aws_url=aws_url,
+        path_parameters=path_parameters,
+        querystring_parameters=querystring_parameters,
+        request_body=request_body,
+        aws_api_key=aws_api_key,
+        correlation_id=correlation_id
+    )
 
 def test_post(local_method, aws_url, path_parameters=None, request_body=None, correlation_id=None):
     return _test_request('POST', local_method, aws_url, path_parameters=path_parameters, request_body=request_body, correlation_id=correlation_id)
