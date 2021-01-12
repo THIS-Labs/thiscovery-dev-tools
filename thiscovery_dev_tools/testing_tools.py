@@ -107,21 +107,27 @@ class TestApiEndpoints(BaseTestCase):
     blank_api_key = ''
     invalid_api_key = '3c907908-44a7-490a-9661-3866b3732d22'
 
-    def _common_assertion(self, expected_status, request_verb, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
+    def _common_assertion(self, expected_status, request_verb, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
         for key in [self.blank_api_key, self.invalid_api_key]:
-            result = _test_request(request_verb, local_method, aws_url, path_parameters=path_parameters,
-                                   querystring_parameters=querystring_parameters, request_body=request_body, aws_api_key=key)
+            result = _test_request(
+                request_method=request_verb,
+                local_method=None,
+                aws_url=aws_url,
+                path_parameters=path_parameters,
+                querystring_parameters=querystring_parameters,
+                request_body=request_body,
+                aws_api_key=key)
             result_status = result['statusCode']
             self.assertEqual(expected_status, result_status)
 
-    def check_api_is_restricted(self, request_verb, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
+    def check_api_is_restricted(self, request_verb, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
         expected_status = HTTPStatus.FORBIDDEN
-        self._common_assertion(expected_status, request_verb, local_method, aws_url, path_parameters=path_parameters,
+        self._common_assertion(expected_status, request_verb, aws_url, path_parameters=path_parameters,
                                querystring_parameters=querystring_parameters, request_body=request_body)
 
-    def check_api_is_public(self, request_verb, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
+    def check_api_is_public(self, request_verb, aws_url, path_parameters=None, querystring_parameters=None, request_body=None):
         expected_status = HTTPStatus.OK
-        self._common_assertion(expected_status, request_verb, local_method, aws_url, path_parameters=path_parameters,
+        self._common_assertion(expected_status, request_verb, aws_url, path_parameters=path_parameters,
                                querystring_parameters=querystring_parameters, request_body=request_body)
 
 
