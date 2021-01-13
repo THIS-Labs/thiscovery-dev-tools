@@ -118,6 +118,7 @@ class TestApiEndpoints(BaseTestCase):
                 querystring_parameters=querystring_parameters,
                 request_body=request_body,
                 aws_api_key=key)
+            self.logger.debug('Response headers', extra={'headers': result.headers})
             result_status = result['statusCode']
             self.assertEqual(expected_status, result_status)
 
