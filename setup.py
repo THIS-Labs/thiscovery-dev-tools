@@ -17,6 +17,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/THIS-Institute/thiscovery-dev-tools",
     packages=setuptools.find_packages(),
+    package_data={
+        'thiscovery_dev_tools': ['test_data'],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3",
