@@ -1,3 +1,4 @@
+import os
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -17,6 +18,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/THIS-Institute/thiscovery-dev-tools",
     packages=setuptools.find_packages(),
+    package_data={
+        'thiscovery_dev_tools': [os.path.join('test_data', 'auth0_events.py')]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3",
