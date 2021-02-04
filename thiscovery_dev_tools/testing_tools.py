@@ -143,6 +143,10 @@ class GetAtt(yaml.YAMLObject):
         return cls(node.value)
 
 
+class Join(GetAtt):
+    yaml_tag = '!Join'
+
+
 class Sub(GetAtt):
     yaml_tag = '!Sub'
 
