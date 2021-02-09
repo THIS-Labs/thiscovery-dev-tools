@@ -170,9 +170,22 @@ class TestSecurityOfEndpointsDefinedInTemplateYaml(BaseTestCase):
             cls.t_dict = yaml.load(f, Loader=yaml.Loader)
         cls.api_resource_name = api_resource_name
 
+    def _check_security_definitions(self, api_definition_body):
+        self.assertIn('securityDefinitions', api_definition_body.keys())
+        expected_security_definitions = {
+            'api_key': {
+                'in': 'header',
+                'name': 'x-api-key',
+                'type': 'apiKey'
+            }
+        }
+        self.assertEqual(expected_security_definitions, api_definition_body['securityDefinitions'])
+
     def check_defined_endpoints_are_secure(self):
         endpoint_counter = 0
-        api_paths = self.t_dict['Resources'][self.api_resource_name]['Properties']['DefinitionBody']['paths']
+        api_definition_body = self.t_dict['Resources'][self.api_resource_name]['Properties']['DefinitionBody']
+        self._check_security_definitions(api_definition_body=api_definition_body)
+        api_paths = api_definition_body['paths']
         for url, value in api_paths.items():
             for verb in ['delete', 'get', 'head', 'patch', 'post', 'put']:
                 endpoint_config = value.get(verb)
