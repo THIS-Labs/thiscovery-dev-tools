@@ -12,6 +12,7 @@ setuptools.setup(
     description="Thiscovery development tools",
     install_requires=[
         'thiscovery-lib',
+        'prettytable',
         'pyyaml'
     ],
     long_description=long_description,
