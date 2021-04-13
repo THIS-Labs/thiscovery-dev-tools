@@ -38,48 +38,42 @@ SUCCESSFUL_LOGIN = {
                 "session_id": "dt1G5nlxkGV10uJx4sKKBH7hwEVbaHAx",
                 "initiatedAt": 1610799117840,
                 "completedAt": 1610799150146,
-                "stats": {
-                    "loginsCount": 1
-                },
+                "stats": {"loginsCount": 1},
                 "prompts": [
                     {
                         "initiatedAt": 1610799149624,
                         "completedAt": 1610799149961,
                         "connection_id": "con_C85rtu1sSH9UFXmR",
-                        "stats": {
-                            "loginsCount": 1
-                        },
+                        "stats": {"loginsCount": 1},
                         "identity": "6012d7eccvf1c41076d8ed3d",
                         "name": "lock-password-authenticate",
                         "connection": "Username-Password-Authentication",
                         "strategy": "auth0",
                         "session_user": "7102e82d05c97d006e666478",
-                        "elapsedTime": 337
+                        "elapsedTime": 337,
                     },
                     {
                         "initiatedAt": 1610799117842,
                         "completedAt": 1610799149964,
-                        "timers": {
-                            "rules": 153
-                        },
+                        "timers": {"rules": 153},
                         "user_id": "auth0|6012d7eccvf1c41076d8ed3d",
                         "user_name": "altha@email.co.uk",
                         "name": "login",
                         "flow": "login",
-                        "elapsedTime": 32122
-                    }
+                        "elapsedTime": 32122,
+                    },
                 ],
-                "elapsedTime": 32306
+                "elapsedTime": 32306,
             },
             "strategy": "auth0",
             "client_name": "Thiscovery",
             "user_agent": "Mozilla/5.0 (Linux; Android 10; SM-A908B Build/QP1A.190711.020; wv) "
-                          "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
-                          "Chrome/87.0.4280.141 Mobile Safari/537.36 EdgW/1.0"
+            "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
+            "Chrome/87.0.4280.141 Mobile Safari/537.36 EdgW/1.0",
         },
-        "log_id": "80020210116121232560015923748216455316604749397232713763"
+        "log_id": "80020210116121232560015923748216455316604749397232713763",
     },
     "region": "eu-west-1",
     "version": "0",
-    "account": "696982352112"
+    "account": "696982352112",
 }

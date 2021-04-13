@@ -23,7 +23,6 @@ from tkinter.filedialog import askopenfilename
 
 
 class CsvImporter:
-
     def __init__(self, csvfile_path=None):
         self.logger = utils.get_logger()
         self.input_filename = csvfile_path
@@ -32,9 +31,9 @@ class CsvImporter:
             root.withdraw()  # we don't want a full GUI, so keep the root window from appearing
             root.update()
             self.input_filename = askopenfilename(
-                initialdir=os.path.expanduser('~'),
+                initialdir=os.path.expanduser("~"),
                 title="Please select input file",
-                filetypes=(("csv files", "*.csv"), ("all files", "*.*"))
+                filetypes=(("csv files", "*.csv"), ("all files", "*.*")),
             )
             root.update()
             root.destroy()
