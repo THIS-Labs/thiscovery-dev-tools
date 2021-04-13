@@ -199,6 +199,10 @@ class Join(GetAtt):
     yaml_tag = "!Join"
 
 
+class Not(GetAtt):
+    yaml_tag = "!Not"
+
+
 class Sub(GetAtt):
     yaml_tag = "!Sub"
 
