@@ -195,6 +195,14 @@ class GetAtt(yaml.YAMLObject):
         return cls(node.value)
 
 
+class Equals(GetAtt):
+    yaml_tag = "!Equals"
+
+
+class If(GetAtt):
+    yaml_tag = "!If"
+
+
 class Join(GetAtt):
     yaml_tag = "!Join"
 
