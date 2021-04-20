@@ -51,6 +51,6 @@ TEST_UNASSIGNED_PERSONAL_LINK_DDB_ITEM = {
 
 TEST_ASSIGNED_PERSONAL_LINK_DDB_ITEM = {
     **TEST_UNASSIGNED_PERSONAL_LINK_DDB_ITEM,
-    "user_id": "8518c7ed-1df4-45e9-8dc4-d49b57ae0663",
+    "anon_project_specific_user_id": "87b8f9a8-2400-4259-a8d9-a2f0b16d9ea1",
     "status": "assigned",
 }
