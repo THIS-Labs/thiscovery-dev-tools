@@ -45,7 +45,7 @@ TEST_UNASSIGNED_PERSONAL_LINK_DDB_ITEM = {
     "modified": "2021-03-25 11:48:33.007893+00:00",
     "status": "new",
     "type": "personal survey link",
-    "url": "https://cambridge.eu.qualtrics.com//jfe/form/SV_2avH1JdVZa8eEAd?Q_DL=EMD_3Tr2Hy8MweBJerm_2avH1JdVZa8eEAd_MLRP_3VsiJYNFbPi6Uyq&Q_CHL=gl",
+    "url": "https://cambridge.eu.qualtrics.com/jfe/form/SV_2avH1JdVZa8eEAd?Q_DL=EMD_3Tr2Hy8MweBJerm_2avH1JdVZa8eEAd_MLRP_3VsiJYNFbPi6Uyq&Q_CHL=gl",
 }
 
 
