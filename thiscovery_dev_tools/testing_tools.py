@@ -24,6 +24,7 @@ from http import HTTPStatus
 
 import thiscovery_lib.utilities as utils
 from thiscovery_lib.dynamodb_utilities import Dynamodb
+from thiscovery_lib.eb_utilities import ThiscoveryEvent
 
 
 def tests_running_on_aws():
@@ -293,6 +294,14 @@ def aws_post(url, request_body):
 
 def aws_patch(url, request_body):
     return _aws_request(method="PATCH", url=url, data=request_body)
+
+
+def test_eb_request(local_method, raw_eb_event, aws_eb_event):
+    if tests_running_on_aws():
+        te = ThiscoveryEvent(event=raw_eb_event)
+        return te.put_event()
+    else:
+        return local_method(aws_eb_event)
 
 
 def _test_request(
