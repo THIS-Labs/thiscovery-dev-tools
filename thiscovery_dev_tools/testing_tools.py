@@ -16,6 +16,7 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 import os
+import time
 import unittest
 import uuid
 import yaml
@@ -296,10 +297,12 @@ def aws_patch(url, request_body):
     return _aws_request(method="PATCH", url=url, data=request_body)
 
 
-def test_eb_request(local_method, raw_eb_event, aws_eb_event):
+def test_eb_request(local_method, aws_eb_event, aws_processing_delay=0):
     if tests_running_on_aws():
-        te = ThiscoveryEvent(event=raw_eb_event)
-        return te.put_event()
+        te = ThiscoveryEvent(event=aws_eb_event)
+        result = te.put_event()
+        time.sleep(aws_processing_delay)
+        return result
     else:
         return local_method(aws_eb_event, dict())
 
