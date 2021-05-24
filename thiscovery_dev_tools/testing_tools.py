@@ -301,7 +301,7 @@ def test_eb_request(local_method, raw_eb_event, aws_eb_event):
         te = ThiscoveryEvent(event=raw_eb_event)
         return te.put_event()
     else:
-        return local_method(aws_eb_event)
+        return local_method(aws_eb_event, dict())
 
 
 def _test_request(
