@@ -15,10 +15,8 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
-import os
 import thiscovery_lib.utilities as utils
 
-BASE_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
 
 QUALTRICS_TEST_OBJECTS = {
     "unittest-contact-list-1": {
