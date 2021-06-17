@@ -15,7 +15,6 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
-import thiscovery_lib.utilities as utils
 
 
 QUALTRICS_TEST_OBJECTS = {
@@ -91,7 +90,6 @@ TEST_CONSENT_EVENT = {
     "resource": "/v1/send-consent-email",
     "path": "/v1/send-consent-email",
     "httpMethod": "POST",
-    "logger": utils.get_logger(),
     "correlation_id": "d3ef676b-8dc4-424b-9250-475f8340f1a4",
     "body": '{"consent_datetime":"2020-11-17T10:39:58+00:00",'
     '"first_name":"Glenda",'
