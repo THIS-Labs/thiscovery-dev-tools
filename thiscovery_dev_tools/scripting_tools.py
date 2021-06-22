@@ -15,8 +15,12 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+from __future__ import annotations
+
 import csv
 import os
+import random
+import string
 import thiscovery_lib.utilities as utils
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
@@ -37,3 +41,13 @@ class CsvImporter:
             )
             root.update()
             root.destroy()
+
+
+def generate_qualtrics_random_response_id(n: int) -> list[str]:
+    characters = string.digits + string.ascii_letters
+    response_ids = list()
+    for _ in range(n):
+        response_ids.append(
+            "R_" + "".join(random.choice(characters) for i in range(15))
+        )
+    return response_ids
