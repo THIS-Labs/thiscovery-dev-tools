@@ -43,6 +43,7 @@ class CsvImporter:
             root.destroy()
 
 
+# region qualtrics test data
 def generate_qualtrics_random_response_id(n: int) -> list[str]:
     characters = string.digits + string.ascii_letters
     response_ids = list()
@@ -51,3 +52,14 @@ def generate_qualtrics_random_response_id(n: int) -> list[str]:
             "R_" + "".join(random.choice(characters) for i in range(15))
         )
     return response_ids
+
+
+def generate_random_longitude(n: int) -> list[float]:
+    return [random.uniform(-180, 180) for _ in range(n)]
+
+
+def generate_random_latitude(n: int) -> list[float]:
+    return [random.uniform(-90, 90) for _ in range(n)]
+
+
+# endregion
