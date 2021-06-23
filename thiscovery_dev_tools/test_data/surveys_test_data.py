@@ -92,7 +92,6 @@ TEST_CONSENT_EVENT = {
     "httpMethod": "POST",
     "correlation_id": "d3ef676b-8dc4-424b-9250-475f8340f1a4",
     "body": '{"consent_datetime":"2020-11-17T10:39:58+00:00",'
-    '"first_name":"Glenda",'
     '"consent_statements":"['
     '{\\"I can confirm that I have read the information '
     "sheet dated October 23rd, 2020 (Version 3.1) for the above study. "
