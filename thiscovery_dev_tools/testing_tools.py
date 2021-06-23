@@ -78,6 +78,19 @@ class BaseDdbMixin:
                 table_name=cls.notifications_table, table_name_verbatim=True
             )
 
+    @classmethod
+    def scan_notifications_table(cls):
+        cls.set_notifications_table()
+        try:
+            return cls.ddb_client.scan(
+                table_name=cls.notifications_table, table_name_verbatim=True
+            )
+        except AttributeError:
+            cls.ddb_client = Dynamodb()
+            return cls.ddb_client.scan(
+                table_name=cls.notifications_table, table_name_verbatim=True
+            )
+
 
 class BaseTestCase(unittest.TestCase):
     """
