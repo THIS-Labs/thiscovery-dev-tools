@@ -49,6 +49,36 @@ def tests_running_on_aws():
         )
 
 
+class BaseDdbMixin:
+    @classmethod
+    def get_ddb_client(cls, stack_name):
+        try:
+            cls.ddb_client
+        except AttributeError:
+            cls.ddb_client = Dynamodb(stack_name=stack_name)
+
+    @classmethod
+    def set_notifications_table(cls):
+        try:
+            cls.notifications_table = f"thiscovery-core-{cls.env_name}-notifications"
+        except AttributeError:
+            cls.env_name = utils.get_environment_name()
+            cls.notifications_table = f"thiscovery-core-{cls.env_name}-notifications"
+
+    @classmethod
+    def clear_notifications_table(cls):
+        cls.set_notifications_table()
+        try:
+            cls.ddb_client.delete_all(
+                table_name=cls.notifications_table, table_name_verbatim=True
+            )
+        except AttributeError:
+            cls.ddb_client = Dynamodb()
+            cls.ddb_client.delete_all(
+                table_name=cls.notifications_table, table_name_verbatim=True
+            )
+
+
 class BaseTestCase(unittest.TestCase):
     """
     Subclass of unittest.TestCase with methods frequently used in Thiscovery testing.
