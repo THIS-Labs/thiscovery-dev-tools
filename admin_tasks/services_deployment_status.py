@@ -1,26 +1,10 @@
 #!/usr/bin/env python3
 
-from local.dev_config import GITHUB_FOLDER, SECRETS_NAMESPACE
+from local.dev_config import GITHUB_FOLDER, SECRETS_NAMESPACE, ENVS, REPOS
 import os
 import re
 import subprocess
 from prettytable import PrettyTable
-
-ENVS = [
-    "test-afs25",
-    # 'staging',
-    "prod",
-]
-
-REPOS = [
-    "s3-to-sdhs",
-    "thiscovery-core",
-    "thiscovery-emails",
-    "thiscovery-events",
-    "thiscovery-interviews",
-    "thiscovery-monitoring",
-    "thiscovery-surveys",
-]
 
 
 repos_table = PrettyTable()
