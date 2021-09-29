@@ -18,6 +18,7 @@ setuptools.setup(
     package_data={
         "thiscovery_dev_tools": [
             os.path.join("test_data", "auth0_events.py"),
+            os.path.join("test_data", "qualtrics_responses.csv"),
             os.path.join("test_data", "survey_personal_links.py"),
             os.path.join("test_data", "surveys_test_data.py"),
         ]
