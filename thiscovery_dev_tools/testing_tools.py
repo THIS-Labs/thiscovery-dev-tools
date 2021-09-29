@@ -121,10 +121,6 @@ class BaseTestCase(unittest.TestCase):
         )
         utils.set_running_unit_tests(False)
 
-    def clear_user_specific_urls(self):
-        self.ddb_client = Dynamodb()
-        self.ddb_client.delete_all("UserSpecificUrls")
-
     def value_test_and_remove(self, entity_dict, attribute_name, expected_value):
         actual_value = entity_dict[attribute_name]
         del entity_dict[attribute_name]
