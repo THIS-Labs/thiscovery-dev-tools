@@ -11,9 +11,17 @@ import thiscovery_lib.utilities as utils
 
 
 class AwsDeployer:
-    def __init__(self, stack_name):
+    def __init__(self, stack_name, param_overrides=None):
+        """
+        Args:
+            stack_name:
+            param_overrides (dict): extra parameters to inject at deployment time;
+                    used by get_parameter_overrides method
+        """
         self.stack_name = stack_name
+        self.param_overrides = param_overrides
         self.branch = self.get_git_branch()
+        self.epsagon_token = os.environ["EPSAGON_TOKEN"]
         (
             self.environment,
             self.stackery_credentials,
@@ -156,49 +164,46 @@ class AwsDeployer:
         )
         self.logger.info("Finished building phase")
 
+    def get_parameter_overrides(self):
+        parameters = {
+            "EpsagontokenAsString": self.epsagon_token,
+            "StackTagName": self.stack_name,
+            "EnvironmentTagName": self.environment,
+            "EnvConfiglambdamemorysizeAsString": f"/{self.environment}/lambda/memory-size",
+            "EnvConfiglambdatimeoutAsString": f"/{self.environment}/lambda/timeout",
+            "EnvConfigeventbridgethiscoveryeventbusAsString": f"/{self.environment}/eventbridge/thiscovery-event-bus",
+        }
+        if self.param_overrides:
+            parameters.update(self.param_overrides)
+        param_overrides_str = str()
+        for k, v in parameters.items():
+            param_overrides_str += f"ParameterKey={k},ParameterValue={v} "
+        return f'"{param_overrides_str.strip()}"'
+
     def deploy(self):
         self.logger.info("Starting deployment phase")
-        base_command = ["sam", "deploy", "--config-env", self.environment]
-        try:
-            subprocess.run(
-                base_command,
-                check=True,
-                stderr=subprocess.PIPE,
-            )
-        except subprocess.CalledProcessError as err:
-            if (
-                err.stderr.decode("utf-8").strip()
-                == "Error: Missing option '--stack-name', 'sam deploy --guided' "
-                "can be used to provide and save needed parameters for future deploys."
-            ):
-                print(
-                    f"Looks like this is the first SAM deployment of {self.stack_name}"
-                    f" to environment {self.environment}. Switching to guided deployment"
-                    f" to generate/append to deployment config file."
-                )
-                print(
-                    "You might also want to refer to https://thiscovery.atlassian.net/wiki/"
-                    "spaces/DEVELOPMEN/pages/848691201/Manually+deploying+a+stack+to+AWS"
-                )
-                aws_profile = utils.namespace2profile(
-                    utils.name2namespace(self.environment)
-                )
-                subprocess.run(
-                    [
-                        *base_command,
-                        "--guided",
-                        "--profile",
-                        aws_profile,
-                        "--capabilities",
-                        "CAPABILITY_NAMED_IAM",
-                        "--stack-name",
-                        f"{self.stack_name}-{self.environment}",
-                    ],
-                    check=True,
-                    stderr=subprocess.PIPE,
-                )
-            else:
-                raise err
+        aws_profile = utils.namespace2profile(utils.name2namespace(self.environment))
+        subprocess.run(
+            [
+                "sam",
+                "deploy",
+                "--debug",
+                "--profile",
+                aws_profile,
+                "--region",
+                "eu-west-1",
+                "--resolve-s3",
+                "--capabilities",
+                "CAPABILITY_NAMED_IAM",
+                "--stack-name",
+                f"{self.stack_name}-{self.environment}",
+                "--parameter-overrides",
+                self.get_parameter_overrides(),
+            ],
+            check=True,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
         self.logger.info("Finished deployment phase")
 
     def main(self):
