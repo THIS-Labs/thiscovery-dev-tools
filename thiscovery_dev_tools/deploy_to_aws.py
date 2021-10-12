@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import requests
+import warnings
 
 import thiscovery_lib.utilities as utils
 
@@ -75,6 +76,10 @@ class AwsDeployer:
             )
 
     def stackery_deployment(self):
+        warnings.warn(
+            "This method will be deprecated on 1 Nov 2021",
+            PendingDeprecationWarning,
+        )
         profile = utils.namespace2profile(utils.name2namespace(self.environment))
         try:
             subprocess.run(
@@ -94,6 +99,10 @@ class AwsDeployer:
             raise err
 
     def stackery_login(self):
+        warnings.warn(
+            "This method will be deprecated on 1 Nov 2021",
+            PendingDeprecationWarning,
+        )
         try:
             subprocess.run(
                 [
@@ -111,14 +120,11 @@ class AwsDeployer:
             print(err.stderr.decode("utf-8").strip())
             raise err
 
-    def deployment_confirmation(self):
-        proceed = input(
-            f"About to deploy branch {self.branch} of {self.stack_name} to {self.environment}. Continue? [y/N]"
+    def stackery_deploy(self):
+        warnings.warn(
+            "This method will be deprecated on 1 Nov 2021",
+            PendingDeprecationWarning,
         )
-        if not proceed.lower() in ["y", "yes"]:
-            sys.exit("Deployment aborted")
-
-    def deploy(self):
         try:
             self.stackery_deployment()
         except subprocess.CalledProcessError as err:
@@ -132,7 +138,61 @@ class AwsDeployer:
             else:
                 raise err
 
+    def deployment_confirmation(self):
+        proceed = input(
+            f"About to deploy branch {self.branch} of {self.stack_name} to {self.environment}. Continue? [y/N]"
+        )
+        if not proceed.lower() in ["y", "yes"]:
+            sys.exit("Deployment aborted")
+
+    def build(self):
+        subprocess.run(["sam", "build"], check=True, stderr=subprocess.PIPE)
+
+    def deploy(self):
+        base_command = ["sam", "deploy", "--config-env", self.environment]
+        try:
+            subprocess.run(
+                base_command,
+                check=True,
+                stderr=subprocess.PIPE,
+            )
+        except subprocess.CalledProcessError as err:
+            if (
+                err.stderr.decode("utf-8").strip()
+                == "Error: Missing option '--stack-name', 'sam deploy --guided' "
+                "can be used to provide and save needed parameters for future deploys."
+            ):
+                print(
+                    f"Looks like this is the first SAM deployment of {self.stack_name}"
+                    f" to environment {self.environment}. Switching to guided deployment"
+                    f" to generate/append to deployment config file."
+                )
+                print(
+                    "You might also want to refer to https://thiscovery.atlassian.net/wiki/"
+                    "spaces/DEVELOPMEN/pages/848691201/Manually+deploying+a+stack+to+AWS"
+                )
+                aws_profile = utils.namespace2profile(
+                    utils.name2namespace(self.environment)
+                )
+                subprocess.run(
+                    [
+                        *base_command,
+                        "--guided",
+                        "--profile",
+                        aws_profile,
+                        "--capabilities",
+                        "CAPABILITY_NAMED_IAM",
+                        "--stack-name",
+                        f"{self.stack_name}-{self.environment}",
+                    ],
+                    check=True,
+                    stderr=subprocess.PIPE,
+                )
+            else:
+                raise err
+
     def main(self):
         self.deployment_confirmation()
+        self.build()
         self.deploy()
         self.slack_message()
