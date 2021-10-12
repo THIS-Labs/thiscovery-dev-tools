@@ -19,6 +19,7 @@ class AwsDeployer:
             self.stackery_credentials,
             self.slack_webhooks,
         ) = self.get_environment_variables()
+        self.logger = utils.get_logger()
 
     @staticmethod
     def get_git_branch():
@@ -146,9 +147,17 @@ class AwsDeployer:
             sys.exit("Deployment aborted")
 
     def build(self):
-        subprocess.run(["sam", "build"], check=True, stderr=subprocess.PIPE)
+        self.logger.info("Starting building phase")
+        subprocess.run(
+            ["sam", "build", "--debug"],
+            check=True,
+            stderr=sys.stderr,
+            stdout=sys.stdout,
+        )
+        self.logger.info("Finished building phase")
 
     def deploy(self):
+        self.logger.info("Starting deployment phase")
         base_command = ["sam", "deploy", "--config-env", self.environment]
         try:
             subprocess.run(
@@ -190,6 +199,7 @@ class AwsDeployer:
                 )
             else:
                 raise err
+        self.logger.info("Finished deployment phase")
 
     def main(self):
         self.deployment_confirmation()
