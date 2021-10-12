@@ -16,31 +16,34 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 from __future__ import annotations
+import cfn_flip
 import copy
-import os
-import time
-import unittest
-import uuid
-import yaml
-from dateutil import parser
-from http import HTTPStatus
+import json
+import requests
 
-import thiscovery_lib.utilities as utils
-from thiscovery_lib.dynamodb_utilities import Dynamodb
-from thiscovery_lib.eb_utilities import ThiscoveryEvent
-import thiscovery_dev_tools.common.yaml_constructors as yc
+from http import HTTPStatus
 
 
 class EpsagonIntegration:
     epsagon_token_parameter_name = "EpsagontokenAsString"
 
-    def __init__(self, template_file_path="raw_template.yaml"):
+    def __init__(self, template_file_path="template.yaml"):
         with open(template_file_path) as f:
-            self.t_dict = yaml.load(f, Loader=yaml.Loader)
+            template = f.read()
+        self.t_dict = json.loads(cfn_flip.to_json(template))
         self.epsagon_layer = self.get_latest_epsagon_layer()
+        self.epsagon_yaml = None  # edited by output_template
 
-    def get_latest_epsagon_layer(self) -> str:
-        pass
+    @staticmethod
+    def get_latest_epsagon_layer() -> str:
+        region = "eu-west-1"
+        r = requests.get(
+            f"https://layers.epsagon.com/production?region={region}&name=epsagon-python-layer&max_items=1"
+        ).json()
+        assert (
+            r["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        ), f"Error fetching Epsagon layer: {r.text}"
+        return r["LayerVersions"][0]["LayerVersionArn"]
 
     def add_epsagon_token_parameter(self):
         parameters = self.t_dict["Parameters"]
@@ -59,9 +62,9 @@ class EpsagonIntegration:
         actual_handler = copy.copy(handler)
         prop["Handler"] = "epsagon.wrapper"
         env_variables["EPSAGON_HANDLER"] = actual_handler
-
-        env_variables["EPSAGON_APP_NAME"] = yc.Ref("${AWS::StackName}")
-        env_variables["EPSAGON_TOKEN"] = yc.Ref(self.epsagon_token_parameter_name)
+        env_variables["EPSAGON_APP_NAME"] = "!Ref ${AWS::StackName}"
+        env_variables["EPSAGON_TOKEN"] = f"!Ref {self.epsagon_token_parameter_name}"
+        return lambda_definition
 
     def trace_lambdas(self):
         resources = self.t_dict["Resources"]
@@ -70,8 +73,9 @@ class EpsagonIntegration:
                 resources[k] = self.add_tracing_to_lambda(v)
 
     def output_template(self):
-        with open("template.yaml") as f:
-            f.write(yaml.dump(self.t_dict, Dumper=yaml.Dumper))
+        self.epsagon_yaml = cfn_flip.to_yaml(json.dumps(self.t_dict))
+        with open("processed_template.yaml", "w") as f:
+            f.write(self.epsagon_yaml)
 
     def main(self):
         self.add_epsagon_token_parameter()

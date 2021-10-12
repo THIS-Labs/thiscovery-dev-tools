@@ -18,10 +18,8 @@
 import yaml
 
 
-# region yaml constructors for stackery tags
-class GetAtt(yaml.YAMLObject):
-    yaml_tag = "!GetAtt"
-
+# region yaml constructors for cloudformation tags
+class CloudFormationTag(yaml.YAMLObject):
     def __init__(self, val):
         self.val = val
 
@@ -33,31 +31,35 @@ class GetAtt(yaml.YAMLObject):
         return cls(node.value)
 
 
-class Equals(GetAtt):
+class GetAtt(CloudFormationTag):
+    yaml_tag = "!GetAtt"
+
+
+class Equals(CloudFormationTag):
     yaml_tag = "!Equals"
 
 
-class If(GetAtt):
+class If(CloudFormationTag):
     yaml_tag = "!If"
 
 
-class Join(GetAtt):
+class Join(CloudFormationTag):
     yaml_tag = "!Join"
 
 
-class Not(GetAtt):
+class Not(CloudFormationTag):
     yaml_tag = "!Not"
 
 
-class Sub(GetAtt):
+class Sub(CloudFormationTag):
     yaml_tag = "!Sub"
 
 
-class Select(GetAtt):
+class Select(CloudFormationTag):
     yaml_tag = "!Select"
 
 
-class Ref(GetAtt):
+class Ref(CloudFormationTag):
     yaml_tag = "!Ref"
 
 
