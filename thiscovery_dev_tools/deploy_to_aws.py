@@ -190,11 +190,10 @@ class AwsDeployer:
             param_overrides_str += f"ParameterKey={k},ParameterValue={v} "
         return f'"{param_overrides_str.strip()}"'
 
-    def deploy(self):
+    def deploy(self, confirm_cf_changeset):
         self.logger.info("Starting deployment phase")
         aws_profile = utils.namespace2profile(utils.name2namespace(self.environment))
-        subprocess.run(
-            [
+        command = [
                 "sam",
                 "deploy",
                 "--debug",
@@ -209,7 +208,11 @@ class AwsDeployer:
                 f"{self.stack_name}-{self.environment}",
                 "--parameter-overrides",
                 self.get_parameter_overrides(),
-            ],
+            ]
+        if confirm_cf_changeset:
+            command.append("--confirm-changeset")
+        subprocess.run(
+            command,
             check=True,
             stdout=sys.stdout,
             stderr=sys.stderr,
@@ -222,9 +225,9 @@ class AwsDeployer:
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 
-    def main(self, cf_template_path="template.yaml"):
+    def main(self, cf_template_path="template.yaml", confirm_cf_changeset=False):
         self.deployment_confirmation()
         self.parse_cf_template(cf_template_path)
         self.build()
-        self.deploy()
+        self.deploy(confirm_cf_changeset)
         self.slack_message()
