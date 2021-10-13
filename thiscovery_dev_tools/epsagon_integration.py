@@ -19,6 +19,7 @@ from __future__ import annotations
 import cfn_flip
 import copy
 import json
+import os
 import requests
 
 from http import HTTPStatus
@@ -74,7 +75,8 @@ class EpsagonIntegration:
 
     def output_template(self):
         self.epsagon_yaml = cfn_flip.to_yaml(json.dumps(self.t_dict))
-        with open("processed_template.yaml", "w") as f:
+        os.makedirs(".thiscovery", exist_ok=True)
+        with open(os.path.join(".thiscovery", "template.yaml"), "w") as f:
             f.write(self.epsagon_yaml)
 
     def main(self):

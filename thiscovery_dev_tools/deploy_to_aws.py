@@ -5,9 +5,10 @@ import os
 import subprocess
 import sys
 import requests
+import thiscovery_lib.utilities as utils
 import warnings
 
-import thiscovery_lib.utilities as utils
+import thiscovery_dev_tools.epsagon_integration as ei
 
 
 class AwsDeployer:
@@ -27,6 +28,7 @@ class AwsDeployer:
             self.stackery_credentials,
             self.slack_webhooks,
         ) = self.get_environment_variables()
+        self.parsed_template = os.path.join(".thiscovery", "template.yaml")
         self.logger = utils.get_logger()
 
     @staticmethod
@@ -157,7 +159,13 @@ class AwsDeployer:
     def build(self):
         self.logger.info("Starting building phase")
         subprocess.run(
-            ["sam", "build", "--debug"],
+            [
+                "sam",
+                "build",
+                "--debug",
+                "-t",
+                self.parsed_template,
+            ],
             check=True,
             stderr=sys.stderr,
             stdout=sys.stdout,
@@ -197,6 +205,8 @@ class AwsDeployer:
                 "CAPABILITY_NAMED_IAM",
                 "--stack-name",
                 f"{self.stack_name}-{self.environment}",
+                "--template",
+                self.parsed_template,
                 "--parameter-overrides",
                 self.get_parameter_overrides(),
             ],
@@ -206,8 +216,13 @@ class AwsDeployer:
         )
         self.logger.info("Finished deployment phase")
 
-    def main(self):
+    def parse_cf_template(self, cf_template_path):
+        epsagon_integration = ei.EpsagonIntegration(template_file_path=cf_template_path)
+        epsagon_integration.main()
+
+    def main(self, cf_template_path="template.yaml"):
         self.deployment_confirmation()
+        self.parse_cf_template(cf_template_path)
         self.build()
         self.deploy()
         self.slack_message()
