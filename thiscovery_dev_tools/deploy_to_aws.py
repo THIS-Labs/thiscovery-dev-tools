@@ -165,6 +165,8 @@ class AwsDeployer:
                 "--debug",
                 "-t",
                 self.parsed_template,
+                "--base-dir",
+                "."
             ],
             check=True,
             stderr=sys.stderr,
@@ -205,8 +207,6 @@ class AwsDeployer:
                 "CAPABILITY_NAMED_IAM",
                 "--stack-name",
                 f"{self.stack_name}-{self.environment}",
-                "--template",
-                self.parsed_template,
                 "--parameter-overrides",
                 self.get_parameter_overrides(),
             ],
@@ -217,8 +217,10 @@ class AwsDeployer:
         self.logger.info("Finished deployment phase")
 
     def parse_cf_template(self, cf_template_path):
+        self.logger.info("Starting template parsing phase")
         epsagon_integration = ei.EpsagonIntegration(template_file_path=cf_template_path)
         epsagon_integration.main()
+        self.logger.info("Ended template parsing phase")
 
     def main(self, cf_template_path="template.yaml"):
         self.deployment_confirmation()
