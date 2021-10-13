@@ -159,15 +159,7 @@ class AwsDeployer:
     def build(self):
         self.logger.info("Starting building phase")
         subprocess.run(
-            [
-                "sam",
-                "build",
-                "--debug",
-                "-t",
-                self.parsed_template,
-                "--base-dir",
-                "."
-            ],
+            ["sam", "build", "--debug", "-t", self.parsed_template, "--base-dir", "."],
             check=True,
             stderr=sys.stderr,
             stdout=sys.stdout,
@@ -194,21 +186,21 @@ class AwsDeployer:
         self.logger.info("Starting deployment phase")
         aws_profile = utils.namespace2profile(utils.name2namespace(self.environment))
         command = [
-                "sam",
-                "deploy",
-                "--debug",
-                "--profile",
-                aws_profile,
-                "--region",
-                "eu-west-1",
-                "--resolve-s3",
-                "--capabilities",
-                "CAPABILITY_NAMED_IAM",
-                "--stack-name",
-                f"{self.stack_name}-{self.environment}",
-                "--parameter-overrides",
-                self.get_parameter_overrides(),
-            ]
+            "sam",
+            "deploy",
+            "--debug",
+            "--profile",
+            aws_profile,
+            "--region",
+            "eu-west-1",
+            "--resolve-s3",
+            "--capabilities",
+            "CAPABILITY_NAMED_IAM",
+            "--stack-name",
+            f"{self.stack_name}-{self.environment}",
+            "--parameter-overrides",
+            self.get_parameter_overrides(),
+        ]
         if confirm_cf_changeset:
             command.append("--confirm-changeset")
         subprocess.run(
