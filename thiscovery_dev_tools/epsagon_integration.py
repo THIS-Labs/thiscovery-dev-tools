@@ -49,8 +49,9 @@ class EpsagonIntegration:
     def add_epsagon_token_parameter(self):
         parameters = self.t_dict["Parameters"]
         parameters[self.epsagon_token_parameter_name] = {
-            "Type": "String",
-            "Description": "Epsagon token (GitHub secret injected by deployment script)",
+            "Type": "AWS::SecretsManager::Secret",
+            "Description": "Epsagon token",
+            "Default": "/<EnvironmentName>/epsagon-connection",
         }
 
     def add_tracing_to_lambda(self, lambda_definition: dict) -> dict:

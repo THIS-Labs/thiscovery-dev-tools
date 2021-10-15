@@ -22,7 +22,6 @@ class AwsDeployer:
         self.stack_name = stack_name
         self.param_overrides = param_overrides
         self.branch = self.get_git_branch()
-        self.epsagon_token = os.environ["EPSAGON_TOKEN"]
         (
             self.environment,
             self.stackery_credentials,
@@ -168,7 +167,7 @@ class AwsDeployer:
 
     def get_parameter_overrides(self):
         parameters = {
-            "EpsagontokenAsString": self.epsagon_token,
+            "EpsagontokenAsString": f"/{self.environment}/epsagon-connection",
             "StackTagName": self.stack_name,
             "EnvironmentTagName": self.environment,
             "EnvConfiglambdamemorysizeAsString": f"/{self.environment}/lambda/memory-size",
