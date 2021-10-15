@@ -12,7 +12,9 @@ import thiscovery_dev_tools.epsagon_integration as ei
 
 
 class AwsDeployer:
-    def __init__(self, stack_name, param_overrides=None):
+    def __init__(
+        self, stack_name, param_overrides=None, sam_template_path="template.yaml"
+    ):
         """
         Args:
             stack_name:
@@ -27,6 +29,7 @@ class AwsDeployer:
             self.stackery_credentials,
             self.slack_webhooks,
         ) = self.get_environment_variables()
+        self.sam_template = sam_template_path
         self.parsed_template = os.path.join(".thiscovery", "template.yaml")
         self.logger = utils.get_logger()
 
@@ -210,18 +213,22 @@ class AwsDeployer:
         )
         self.logger.info("Finished deployment phase")
 
-    def parse_cf_template(self, cf_template_path):
-        self.logger.info("Starting template parsing phase")
-        with open(cf_template_path) as f:
+    def resolve_environment_name(self) -> str:
+        with open(self.sam_template) as f:
             template = f.read()
-            template.replace("<EnvironmentName>", self.environment)
+            template = template.replace("<EnvironmentName>", self.environment)
+        return template
+
+    def parse_cf_template(self):
+        self.logger.info("Starting template parsing phase")
+        template = self.resolve_environment_name()
         epsagon_integration = ei.EpsagonIntegration(template_as_string=template)
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 
-    def main(self, cf_template_path="template.yaml", confirm_cf_changeset=False):
+    def main(self, confirm_cf_changeset=False):
         self.deployment_confirmation()
-        self.parse_cf_template(cf_template_path)
+        self.parse_cf_template()
         self.build()
         self.deploy(confirm_cf_changeset)
         self.slack_message()
