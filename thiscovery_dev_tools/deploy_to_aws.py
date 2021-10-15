@@ -167,12 +167,12 @@ class AwsDeployer:
 
     def get_parameter_overrides(self):
         parameters = {
-            "EpsagontokenAsString": f"/{self.environment}/epsagon-connection",
+            # "EpsagontokenAsString": f"/{self.environment}/epsagon-connection",
             "StackTagName": self.stack_name,
             "EnvironmentTagName": self.environment,
-            "EnvConfiglambdamemorysizeAsString": f"/{self.environment}/lambda/memory-size",
-            "EnvConfiglambdatimeoutAsString": f"/{self.environment}/lambda/timeout",
-            "EnvConfigeventbridgethiscoveryeventbusAsString": f"/{self.environment}/eventbridge/thiscovery-event-bus",
+            # "EnvConfiglambdamemorysizeAsString": f"/{self.environment}/lambda/memory-size",
+            # "EnvConfiglambdatimeoutAsString": f"/{self.environment}/lambda/timeout",
+            # "EnvConfigeventbridgethiscoveryeventbusAsString": f"/{self.environment}/eventbridge/thiscovery-event-bus",
         }
         if self.param_overrides:
             parameters.update(self.param_overrides)
@@ -212,7 +212,10 @@ class AwsDeployer:
 
     def parse_cf_template(self, cf_template_path):
         self.logger.info("Starting template parsing phase")
-        epsagon_integration = ei.EpsagonIntegration(template_file_path=cf_template_path)
+        with open(cf_template_path) as f:
+            template = f.read()
+            template.replace("<EnvironmentName>", self.environment)
+        epsagon_integration = ei.EpsagonIntegration(template_as_string=template)
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 

@@ -28,10 +28,8 @@ from http import HTTPStatus
 class EpsagonIntegration:
     epsagon_token_parameter_name = "EpsagontokenAsString"
 
-    def __init__(self, template_file_path="template.yaml"):
-        with open(template_file_path) as f:
-            template = f.read()
-        self.t_dict = json.loads(cfn_flip.to_json(template))
+    def __init__(self, template_as_string):
+        self.t_dict = json.loads(cfn_flip.to_json(template_as_string))
         self.epsagon_layer = self.get_latest_epsagon_layer()
         self.epsagon_yaml = None  # edited by output_template
 
