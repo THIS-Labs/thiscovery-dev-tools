@@ -5,19 +5,31 @@ import os
 import subprocess
 import sys
 import requests
-
 import thiscovery_lib.utilities as utils
+import warnings
+
+import thiscovery_dev_tools.epsagon_integration as ei
 
 
 class AwsDeployer:
-    def __init__(self, stack_name):
+    def __init__(self, stack_name, param_overrides=None):
+        """
+        Args:
+            stack_name:
+            param_overrides (dict): extra parameters to inject at deployment time;
+                    used by get_parameter_overrides method
+        """
         self.stack_name = stack_name
+        self.param_overrides = param_overrides
         self.branch = self.get_git_branch()
+        self.epsagon_token = os.environ["EPSAGON_TOKEN"]
         (
             self.environment,
             self.stackery_credentials,
             self.slack_webhooks,
         ) = self.get_environment_variables()
+        self.parsed_template = os.path.join(".thiscovery", "template.yaml")
+        self.logger = utils.get_logger()
 
     @staticmethod
     def get_git_branch():
@@ -75,6 +87,10 @@ class AwsDeployer:
             )
 
     def stackery_deployment(self):
+        warnings.warn(
+            "This method will be deprecated on 1 Nov 2021",
+            PendingDeprecationWarning,
+        )
         profile = utils.namespace2profile(utils.name2namespace(self.environment))
         try:
             subprocess.run(
@@ -94,6 +110,10 @@ class AwsDeployer:
             raise err
 
     def stackery_login(self):
+        warnings.warn(
+            "This method will be deprecated on 1 Nov 2021",
+            PendingDeprecationWarning,
+        )
         try:
             subprocess.run(
                 [
@@ -111,14 +131,11 @@ class AwsDeployer:
             print(err.stderr.decode("utf-8").strip())
             raise err
 
-    def deployment_confirmation(self):
-        proceed = input(
-            f"About to deploy branch {self.branch} of {self.stack_name} to {self.environment}. Continue? [y/N]"
+    def stackery_deploy(self):
+        warnings.warn(
+            "This method will be deprecated on 1 Nov 2021",
+            PendingDeprecationWarning,
         )
-        if not proceed.lower() in ["y", "yes"]:
-            sys.exit("Deployment aborted")
-
-    def deploy(self):
         try:
             self.stackery_deployment()
         except subprocess.CalledProcessError as err:
@@ -132,7 +149,77 @@ class AwsDeployer:
             else:
                 raise err
 
-    def main(self):
+    def deployment_confirmation(self):
+        proceed = input(
+            f"About to deploy branch {self.branch} of {self.stack_name} to {self.environment}. Continue? [y/N]"
+        )
+        if not proceed.lower() in ["y", "yes"]:
+            sys.exit("Deployment aborted")
+
+    def build(self):
+        self.logger.info("Starting building phase")
+        subprocess.run(
+            ["sam", "build", "--debug", "-t", self.parsed_template, "--base-dir", "."],
+            check=True,
+            stderr=sys.stderr,
+            stdout=sys.stdout,
+        )
+        self.logger.info("Finished building phase")
+
+    def get_parameter_overrides(self):
+        parameters = {
+            "EpsagontokenAsString": self.epsagon_token,
+            "StackTagName": self.stack_name,
+            "EnvironmentTagName": self.environment,
+            "EnvConfiglambdamemorysizeAsString": f"/{self.environment}/lambda/memory-size",
+            "EnvConfiglambdatimeoutAsString": f"/{self.environment}/lambda/timeout",
+            "EnvConfigeventbridgethiscoveryeventbusAsString": f"/{self.environment}/eventbridge/thiscovery-event-bus",
+        }
+        if self.param_overrides:
+            parameters.update(self.param_overrides)
+        param_overrides_str = str()
+        for k, v in parameters.items():
+            param_overrides_str += f"ParameterKey={k},ParameterValue={v} "
+        return f'"{param_overrides_str.strip()}"'
+
+    def deploy(self, confirm_cf_changeset):
+        self.logger.info("Starting deployment phase")
+        aws_profile = utils.namespace2profile(utils.name2namespace(self.environment))
+        command = [
+            "sam",
+            "deploy",
+            "--debug",
+            "--profile",
+            aws_profile,
+            "--region",
+            "eu-west-1",
+            "--resolve-s3",
+            "--capabilities",
+            "CAPABILITY_NAMED_IAM",
+            "--stack-name",
+            f"{self.stack_name}-{self.environment}",
+            "--parameter-overrides",
+            self.get_parameter_overrides(),
+        ]
+        if confirm_cf_changeset:
+            command.append("--confirm-changeset")
+        subprocess.run(
+            command,
+            check=True,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
+        self.logger.info("Finished deployment phase")
+
+    def parse_cf_template(self, cf_template_path):
+        self.logger.info("Starting template parsing phase")
+        epsagon_integration = ei.EpsagonIntegration(template_file_path=cf_template_path)
+        epsagon_integration.main()
+        self.logger.info("Ended template parsing phase")
+
+    def main(self, cf_template_path="template.yaml", confirm_cf_changeset=False):
         self.deployment_confirmation()
-        self.deploy()
+        self.parse_cf_template(cf_template_path)
+        self.build()
+        self.deploy(confirm_cf_changeset)
         self.slack_message()

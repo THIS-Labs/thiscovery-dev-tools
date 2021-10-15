@@ -26,6 +26,7 @@ from http import HTTPStatus
 import thiscovery_lib.utilities as utils
 from thiscovery_lib.dynamodb_utilities import Dynamodb
 from thiscovery_lib.eb_utilities import ThiscoveryEvent
+from thiscovery_dev_tools.common.yaml_constructors import *  # load all custom constructors
 
 
 def tests_running_on_aws():
@@ -222,49 +223,6 @@ class TestApiEndpoints(BaseTestCase):
             querystring_parameters=querystring_parameters,
             request_body=request_body,
         )
-
-
-# region yaml constructors for stackery tags
-class GetAtt(yaml.YAMLObject):
-    yaml_tag = "!GetAtt"
-
-    def __init__(self, val):
-        self.val = val
-
-    @classmethod
-    def from_yaml(cls, loader, node):
-        return cls(node.value)
-
-
-class Equals(GetAtt):
-    yaml_tag = "!Equals"
-
-
-class If(GetAtt):
-    yaml_tag = "!If"
-
-
-class Join(GetAtt):
-    yaml_tag = "!Join"
-
-
-class Not(GetAtt):
-    yaml_tag = "!Not"
-
-
-class Sub(GetAtt):
-    yaml_tag = "!Sub"
-
-
-class Select(GetAtt):
-    yaml_tag = "!Select"
-
-
-class Ref(GetAtt):
-    yaml_tag = "!Ref"
-
-
-# endregion
 
 
 class TestSecurityOfEndpointsDefinedInTemplateYaml(BaseTestCase):

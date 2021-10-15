@@ -10,7 +10,7 @@ setuptools.setup(
     author="Thiscovery team",
     author_email="support@thiscovery.org",
     description="Thiscovery development tools",
-    install_requires=["thiscovery-lib", "prettytable", "pyyaml"],
+    install_requires=["thiscovery-lib", "prettytable", "pyyaml", "cfn-flip"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/THIS-Institute/thiscovery-dev-tools",
