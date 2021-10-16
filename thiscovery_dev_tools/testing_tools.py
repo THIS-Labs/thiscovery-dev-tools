@@ -26,7 +26,52 @@ from http import HTTPStatus
 import thiscovery_lib.utilities as utils
 from thiscovery_lib.dynamodb_utilities import Dynamodb
 from thiscovery_lib.eb_utilities import ThiscoveryEvent
-from thiscovery_dev_tools.common.yaml_constructors import *  # load all custom constructors
+
+
+# region yaml constructors for cloudformation tags
+class CloudFormationTag(yaml.YAMLObject):
+    def __init__(self, val):
+        self.val = val
+
+    def __repr__(self):
+        return f"{self.yaml_tag} {self.val}"
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return cls(node.value)
+
+
+class GetAtt(CloudFormationTag):
+    yaml_tag = "!GetAtt"
+
+
+class Equals(CloudFormationTag):
+    yaml_tag = "!Equals"
+
+
+class If(CloudFormationTag):
+    yaml_tag = "!If"
+
+
+class Join(CloudFormationTag):
+    yaml_tag = "!Join"
+
+
+class Not(CloudFormationTag):
+    yaml_tag = "!Not"
+
+
+class Sub(CloudFormationTag):
+    yaml_tag = "!Sub"
+
+
+class Select(CloudFormationTag):
+    yaml_tag = "!Select"
+
+
+class Ref(CloudFormationTag):
+    yaml_tag = "!Ref"
+# endregion
 
 
 def tests_running_on_aws():

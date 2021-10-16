@@ -19,14 +19,9 @@ import local.dev_config  # sets env variable 'TEST_ON_AWS'
 import local.secrets  # sets AWS profile as env variable
 import cfn_flip
 import os
-import thiscovery_dev_tools.testing_tools as test_tools
 import unittest
-import yaml
-
-import thiscovery_dev_tools.common.yaml_constructors as yc
 import thiscovery_dev_tools.epsagon_integration as ei
 
-from http import HTTPStatus
 from pprint import pprint
 
 
