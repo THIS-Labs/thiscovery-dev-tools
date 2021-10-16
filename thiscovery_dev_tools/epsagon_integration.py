@@ -48,7 +48,7 @@ class EpsagonIntegration:
     def add_epsagon_token_parameter(self):
         parameters = self.t_dict["Parameters"]
         parameters[self.epsagon_token_parameter_name] = {
-            "Type": "AWS::SecretsManager::Secret",
+            "Type": "AWS::SecretsManager::Secret::Value<String>",
             "Description": "Epsagon token",
             "Default": f"/{self.environment}/epsagon-connection",
         }
