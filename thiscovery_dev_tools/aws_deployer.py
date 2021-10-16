@@ -222,7 +222,9 @@ class AwsDeployer:
     def parse_cf_template(self):
         self.logger.info("Starting template parsing phase")
         template = self.resolve_environment_name()
-        epsagon_integration = ei.EpsagonIntegration(template_as_string=template)
+        epsagon_integration = ei.EpsagonIntegration(
+            template_as_string=template, environment=self.environment
+        )
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 

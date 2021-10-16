@@ -28,10 +28,11 @@ from http import HTTPStatus
 class EpsagonIntegration:
     epsagon_token_parameter_name = "EpsagontokenAsString"
 
-    def __init__(self, template_as_string):
+    def __init__(self, template_as_string, environment):
         self.t_dict = json.loads(cfn_flip.to_json(template_as_string))
         self.epsagon_layer = self.get_latest_epsagon_layer()
         self.epsagon_yaml = None  # edited by output_template
+        self.environment = environment
 
     @staticmethod
     def get_latest_epsagon_layer() -> str:
@@ -49,7 +50,7 @@ class EpsagonIntegration:
         parameters[self.epsagon_token_parameter_name] = {
             "Type": "AWS::SecretsManager::Secret",
             "Description": "Epsagon token",
-            "Default": "/<EnvironmentName>/epsagon-connection",
+            "Default": f"/{self.environment}/epsagon-connection",
         }
 
     def add_tracing_to_lambda(self, lambda_definition: dict) -> dict:
