@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+import cfn_flip
 import json
 import os
 import subprocess
 import sys
 import requests
+import thiscovery_lib.ssm_utilities as ssm_utils
 import thiscovery_lib.utilities as utils
 import warnings
 
@@ -31,7 +33,9 @@ class AwsDeployer:
         ) = self.get_environment_variables()
         self.sam_template = sam_template_path
         self.parsed_template = os.path.join(".thiscovery", "template.yaml")
+        self._template_yaml = self.resolve_environment_name()
         self.logger = utils.get_logger()
+        self.ssm_client = ssm_utils.SsmClient()
 
     @staticmethod
     def get_git_branch():
@@ -44,8 +48,9 @@ class AwsDeployer:
         status = subprocess.run(
             ["git", "status"], capture_output=True, check=True, text=True
         ).stdout.strip()
-        if ("Your branch is ahead" in status) or (
-            "Changes not staged for commit" in status
+        if not utils.running_unit_tests() and (
+            ("Your branch is ahead" in status)
+            or ("Changes not staged for commit" in status)
         ):
             while True:
                 proceed = input(
@@ -227,21 +232,46 @@ class AwsDeployer:
     def resolve_environment_name(self) -> str:
         with open(self.sam_template) as f:
             template = f.read()
-            template = template.replace("<EnvironmentName>", self.environment)
-        return template
+            self._template_yaml = template.replace(
+                "<EnvironmentName>", self.environment
+            )
+        return self._template_yaml
 
-    def parse_cf_template(self):
+    def parse_provisioned_concurrency_setting(self):
+        """
+        Strips ProvisionedConcurrencyConfig from template resources if environemnt's
+        provisioned-concurrency in AWS parameter store is set to zero (eval to False).
+        """
+        if not self.ssm_client.get_parameter("lambda/provisioned-concurrency"):
+            template_dict = template_to_dict(self._template_yaml)
+            for _, v in template_dict["Resources"].items():
+                try:
+                    del v["Properties"]["ProvisionedConcurrencyConfig"]
+                except KeyError:
+                    pass
+            self._template_yaml = template_to_yaml(template_dict)
+        return self._template_yaml
+
+    def parse_sam_template(self):
         self.logger.info("Starting template parsing phase")
-        template = self.resolve_environment_name()
+        self.parse_provisioned_concurrency_setting()
         epsagon_integration = ei.EpsagonIntegration(
-            template_as_string=template, environment=self.environment
+            template_as_string=self._template_yaml, environment=self.environment
         )
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 
     def main(self, confirm_cf_changeset=False, build_in_container=False):
         self.deployment_confirmation()
-        self.parse_cf_template()
+        self.parse_sam_template()
         self.build(build_in_container)
         self.deploy(confirm_cf_changeset)
         self.slack_message()
+
+
+def template_to_dict(template_as_string):
+    return json.loads(cfn_flip.to_json(template_as_string))
+
+
+def template_to_yaml(template_dict):
+    return cfn_flip.to_yaml(json.dumps(template_dict))
