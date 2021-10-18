@@ -71,6 +71,8 @@ class Select(CloudFormationTag):
 
 class Ref(CloudFormationTag):
     yaml_tag = "!Ref"
+
+
 # endregion
 
 
