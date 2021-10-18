@@ -158,10 +158,21 @@ class AwsDeployer:
         if not proceed.lower() in ["y", "yes"]:
             sys.exit("Deployment aborted")
 
-    def build(self):
+    def build(self, build_in_container):
         self.logger.info("Starting building phase")
+        command = [
+            "sam",
+            "build",
+            "--debug",
+            "-t",
+            self.parsed_template,
+            "--base-dir",
+            ".",
+        ]
+        if build_in_container:
+            command.append("--use-container")
         subprocess.run(
-            ["sam", "build", "--debug", "-t", self.parsed_template, "--base-dir", "."],
+            command,
             check=True,
             stderr=sys.stderr,
             stdout=sys.stdout,
@@ -228,9 +239,9 @@ class AwsDeployer:
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 
-    def main(self, confirm_cf_changeset=False):
+    def main(self, confirm_cf_changeset=False, build_in_container=False):
         self.deployment_confirmation()
         self.parse_cf_template()
-        self.build()
+        self.build(build_in_container)
         self.deploy(confirm_cf_changeset)
         self.slack_message()
