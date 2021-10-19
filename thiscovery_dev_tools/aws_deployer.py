@@ -281,6 +281,7 @@ class AwsDeployer:
                 "stack": self.stack_name,
                 "environment": self.environment,
                 "revision": self.revision,
+                "branch": self.branch,
             },
         }
         deployment = eb_utils.ThiscoveryEvent(deployment_dict)
