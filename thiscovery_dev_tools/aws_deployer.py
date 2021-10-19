@@ -175,6 +175,14 @@ class AwsDeployer:
             sys.exit("Deployment aborted")
 
     def build(self, build_in_container):
+        def run_build(build_command):
+            subprocess.run(
+                build_command,
+                check=True,
+                stderr=sys.stderr,
+                stdout=sys.stdout,
+            )
+
         self.logger.info("Starting building phase")
         command = [
             "sam",
@@ -187,12 +195,15 @@ class AwsDeployer:
         ]
         if build_in_container:
             command.append("--use-container")
-        subprocess.run(
-            command,
-            check=True,
-            stderr=sys.stderr,
-            stdout=sys.stdout,
-        )
+        try:
+            run_build(command)
+        except subprocess.CalledProcessError:
+            if not build_in_container:
+                self.logger.warning(
+                    "Standard build strategy failed; attempting to build in Docker container"
+                )
+                command.append("--use-container")
+                run_build(command)
         self.logger.info("Finished building phase")
 
     def get_parameter_overrides(self):
