@@ -22,6 +22,7 @@ import os
 import thiscovery_dev_tools.aws_deployer as ad
 import thiscovery_dev_tools.testing_tools as test_tools
 import thiscovery_lib.utilities as utils
+from http import HTTPStatus
 from pprint import pprint
 
 
@@ -45,3 +46,11 @@ class AwsDeployerTestCase(test_tools.BaseTestCase):
         )
         aws_deployer.parse_provisioned_concurrency_setting()
         self.assertNotIn("ProvisionedConcurrencyConfig", aws_deployer._template_yaml)
+
+    def test_log_deployment_ok(self):
+        aws_deployer = ad.AwsDeployer(
+            stack_name="unittest",
+            sam_template_path=os.path.join(TEST_DATA_FOLDER, "raw_template_02.yaml"),
+        )
+        response = aws_deployer.log_deployment()
+        self.assertEqual(HTTPStatus.OK, response["ResponseMetadata"]["HTTPStatusCode"])

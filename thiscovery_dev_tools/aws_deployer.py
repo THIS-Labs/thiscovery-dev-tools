@@ -27,6 +27,7 @@ class AwsDeployer:
         self.stack_name = stack_name
         self.param_overrides = param_overrides
         self.branch = self.get_git_branch()
+        self.revision = self.get_git_revision()
         (
             self.environment,
             self.stackery_credentials,
@@ -37,6 +38,15 @@ class AwsDeployer:
         self._template_yaml = self.resolve_environment_name()
         self.logger = utils.get_logger()
         self.ssm_client = ssm_utils.SsmClient()
+
+    @staticmethod
+    def get_git_revision():
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            check=True,
+            text=True,
+        ).stdout.strip()
 
     @staticmethod
     def get_git_branch():
@@ -270,11 +280,13 @@ class AwsDeployer:
             "detail": {
                 "stack": self.stack_name,
                 "environment": self.environment,
+                "revision": self.revision,
             },
         }
-        deploymnet = eb_utils.ThiscoveryEvent(deployment_dict)
-        deploymnet.put_event()
+        deployment = eb_utils.ThiscoveryEvent(deployment_dict)
+        response = deployment.put_event()
         self.logger.info("Finished posting deployment event")
+        return response
 
     def main(self, **kwargs):
         """
