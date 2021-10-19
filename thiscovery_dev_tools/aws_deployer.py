@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import requests
+import thiscovery_lib.eb_utilities as eb_utils
 import thiscovery_lib.ssm_utilities as ssm_utils
 import thiscovery_lib.utilities as utils
 import warnings
@@ -88,10 +89,10 @@ class AwsDeployer:
             data=json.dumps(payload),
             headers=header,
         )
-        if "afs25" in self.environment:
-            requests.post(
-                self.slack_webhooks["Andre"], data=json.dumps(payload), headers=header
-            )
+        # if "afs25" in self.environment:
+        #     requests.post(
+        #         self.slack_webhooks["Andre"], data=json.dumps(payload), headers=header
+        #     )
 
     def stackery_deployment(self):
         warnings.warn(
@@ -261,6 +262,18 @@ class AwsDeployer:
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 
+    def log_deployment(self):
+        deployment_dict = {
+            "source": "aws_deployer",
+            "detail-type": "deployment",
+            "detail": {
+                "stack": self.stack_name,
+                "environment": self.environment,
+            },
+        }
+        deploymnet = eb_utils.ThiscoveryEvent(deployment_dict)
+        deploymnet.put_event()
+
     def main(self, **kwargs):
         """
         Args:
@@ -275,6 +288,7 @@ class AwsDeployer:
         if not kwargs.get("skip_build", False):
             self.build(kwargs.get("build_in_container", False))
         self.deploy(kwargs.get("confirm_cf_changes", False))
+        self.log_deployment()
         self.slack_message()
 
 
