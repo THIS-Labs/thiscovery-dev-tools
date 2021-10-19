@@ -261,11 +261,20 @@ class AwsDeployer:
         epsagon_integration.main()
         self.logger.info("Ended template parsing phase")
 
-    def main(self, confirm_cf_changeset=False, build_in_container=False):
+    def main(self, **kwargs):
+        """
+        Args:
+            **kwargs: confirm_cf_changeset (bool): confirm changes before deployment
+                      build_in_container (bool): build in a Docker container
+                      skip_build (bool): skip building phase
+        Returns:
+
+        """
         self.deployment_confirmation()
         self.parse_sam_template()
-        self.build(build_in_container)
-        self.deploy(confirm_cf_changeset)
+        if not kwargs.get("skip_build", False):
+            self.build(kwargs.get("build_in_container", False))
+        self.deploy(kwargs.get("confirm_cf_changes", False))
         self.slack_message()
 
 
