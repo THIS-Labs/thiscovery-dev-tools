@@ -295,10 +295,12 @@ class AwsDeployer:
             **kwargs: confirm_cf_changeset (bool): confirm changes before deployment
                       build_in_container (bool): build in a Docker container
                       skip_build (bool): skip building phase
+                      skip_confirmation (bool): skip deployment confirmation
         Returns:
 
         """
-        self.deployment_confirmation()
+        if not kwargs.get("skip_confirmation", False):
+            self.deployment_confirmation()
         self.parse_sam_template()
         if not kwargs.get("skip_build", False):
             self.build(kwargs.get("build_in_container", False))
