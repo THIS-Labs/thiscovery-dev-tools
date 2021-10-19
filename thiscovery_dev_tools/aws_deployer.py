@@ -263,6 +263,7 @@ class AwsDeployer:
         self.logger.info("Ended template parsing phase")
 
     def log_deployment(self):
+        self.logger.info("Posting deployment event")
         deployment_dict = {
             "source": "aws_deployer",
             "detail-type": "deployment",
@@ -273,6 +274,7 @@ class AwsDeployer:
         }
         deploymnet = eb_utils.ThiscoveryEvent(deployment_dict)
         deploymnet.put_event()
+        self.logger.info("Finished posting deployment event")
 
     def main(self, **kwargs):
         """
