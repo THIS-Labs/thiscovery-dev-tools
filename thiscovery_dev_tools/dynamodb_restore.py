@@ -46,6 +46,7 @@ class DynamodbRestore:
             ]
         )
         self.ddb_client = Dynamodb(stack_name=stack_name)
+        self.ddb_low_level = utils.BaseClient("dynamodb")
 
     def create_aws_restored_table(self, **kwargs):
         if kwargs.get("RestoreDateTime") is None:
@@ -55,7 +56,7 @@ class DynamodbRestore:
             else:
                 kwargs["RestoreDateTime"] = self.restore_datetime
 
-        self.ddb_client.client.restore_table_to_point_in_time(
+        self.ddb_low_level.client.restore_table_to_point_in_time(
             SourceTableName=self.full_table_name,
             TargetTableName=self.aws_restored_table,
             **kwargs,
@@ -80,8 +81,6 @@ class DynamodbRestore:
                 self.aws_restored_table,
             ],
             check=True,
-            stderr=sys.stderr,
-            stdout=sys.stdout,
         )
 
     def update_original_table_with_restored_data(self):
@@ -101,9 +100,10 @@ class DynamodbRestore:
                 self.full_table_name,
             ],
             check=True,
-            stderr=sys.stderr,
-            stdout=sys.stdout,
         )
+
+    def delete_aws_restored_table(self):
+        return self.ddb_low_level.client.delete_table(TableName=self.aws_restored_table)
 
     def restore_deleted_or_updated_items(self, **kwargs):
         """
@@ -115,3 +115,13 @@ class DynamodbRestore:
         self.wait_for_aws_restored_table_ready()
         self.create_local_dump_of_aws_restored_table()
         self.update_original_table_with_restored_data()
+        if utils.running_unit_tests():
+            self.delete_aws_restored_table()
+        else:
+            delete_restored_copy_confirmation = input(
+                f"Dynamodb table {self.full_table_name} successfully updated "
+                f"from restored copy {self.aws_restored_table}. Would you like to "
+                f"delete the restored copy {self.aws_restored_table}? (y/N)"
+            )
+            if delete_restored_copy_confirmation.lower() == "y":
+                self.delete_aws_restored_table()
