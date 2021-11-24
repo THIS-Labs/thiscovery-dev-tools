@@ -11,7 +11,6 @@ setuptools.setup(
     author_email="support@thiscovery.org",
     description="Thiscovery development tools",
     install_requires=[
-        "https://github.com/THIS-Institute/thiscovery-lib/archive/refs/heads/master.zip",
         "prettytable",
         "pyyaml",
         "cfn-flip",
