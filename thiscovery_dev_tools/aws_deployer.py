@@ -30,7 +30,6 @@ class AwsDeployer:
         self.revision = self.get_git_revision()
         (
             self.environment,
-            self.stackery_credentials,
             self.slack_webhooks,
         ) = self.get_environment_variables()
         self.sam_template = sam_template_path
@@ -80,14 +79,13 @@ class AwsDeployer:
     def get_environment_variables():
         try:
             secrets_namespace = os.environ["SECRETS_NAMESPACE"]
-            stackery_credentials = os.environ["STACKERY_CREDENTIALS"]
             slack_webhooks = os.environ["SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS"]
         except KeyError as err:
             raise utils.DetailedValueError(
                 "Environment variable not set", {"KeyError": err.__repr__()}
             )
         environment = utils.namespace2name(secrets_namespace)
-        return environment, json.loads(stackery_credentials), json.loads(slack_webhooks)
+        return environment, json.loads(slack_webhooks)
 
     def slack_message(self, message=None):
         if not message:
@@ -99,73 +97,6 @@ class AwsDeployer:
             data=json.dumps(payload),
             headers=header,
         )
-        # if "afs25" in self.environment:
-        #     requests.post(
-        #         self.slack_webhooks["Andre"], data=json.dumps(payload), headers=header
-        #     )
-
-    def stackery_deployment(self):
-        warnings.warn(
-            "This method will be deprecated on 1 Nov 2021",
-            PendingDeprecationWarning,
-        )
-        profile = utils.namespace2profile(utils.name2namespace(self.environment))
-        try:
-            subprocess.run(
-                [
-                    "stackery",
-                    "deploy",
-                    f"--stack-name={self.stack_name}",
-                    f"--aws-profile={profile}",
-                    f"--env-name={self.environment}",
-                    f"--git-ref={self.branch}",
-                ],
-                check=True,
-                stderr=subprocess.PIPE,
-            )
-        except subprocess.CalledProcessError as err:
-            print(err.stderr.decode("utf-8").strip())
-            raise err
-
-    def stackery_login(self):
-        warnings.warn(
-            "This method will be deprecated on 1 Nov 2021",
-            PendingDeprecationWarning,
-        )
-        try:
-            subprocess.run(
-                [
-                    "stackery",
-                    "login",
-                    "--email",
-                    self.stackery_credentials["email"],
-                    "--password",
-                    self.stackery_credentials["password"],
-                ],
-                check=True,
-                stderr=subprocess.PIPE,
-            )
-        except subprocess.CalledProcessError as err:
-            print(err.stderr.decode("utf-8").strip())
-            raise err
-
-    def stackery_deploy(self):
-        warnings.warn(
-            "This method will be deprecated on 1 Nov 2021",
-            PendingDeprecationWarning,
-        )
-        try:
-            self.stackery_deployment()
-        except subprocess.CalledProcessError as err:
-            if (
-                err.stderr.decode("utf-8").strip()
-                == "Error: Failed to get settings: Attempting to access Stackery "
-                "before logging in. Please run `stackery login` first."
-            ):
-                self.stackery_login()
-                self.stackery_deployment()
-            else:
-                raise err
 
     def deployment_confirmation(self):
         proceed = input(
@@ -208,12 +139,8 @@ class AwsDeployer:
 
     def get_parameter_overrides(self):
         parameters = {
-            # "EpsagontokenAsString": f"/{self.environment}/epsagon-connection",
             "StackTagName": self.stack_name,
             "EnvironmentTagName": self.environment,
-            # "EnvConfiglambdamemorysizeAsString": f"/{self.environment}/lambda/memory-size",
-            # "EnvConfiglambdatimeoutAsString": f"/{self.environment}/lambda/timeout",
-            # "EnvConfigeventbridgethiscoveryeventbusAsString": f"/{self.environment}/eventbridge/thiscovery-event-bus",
         }
         if self.param_overrides:
             parameters.update(self.param_overrides)
@@ -236,6 +163,7 @@ class AwsDeployer:
             "--resolve-s3",
             "--capabilities",
             "CAPABILITY_NAMED_IAM",
+            "--no-fail-on-empty-changeset",
             "--stack-name",
             f"{self.stack_name}-{self.environment}",
             "--parameter-overrides",

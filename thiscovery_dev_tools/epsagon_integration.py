@@ -39,11 +39,12 @@ class EpsagonIntegration:
         region = "eu-west-1"
         r = requests.get(
             f"https://layers.epsagon.com/production?region={region}&name=epsagon-python-layer&max_items=1"
-        ).json()
+        )
         assert (
-            r["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
-        ), f"Error fetching Epsagon layer: {r.text}"
-        return r["LayerVersions"][0]["LayerVersionArn"]
+            r.status_code == HTTPStatus.OK
+        ), f"Error fetching Epsagon layer: {r.status_code} - {r.reason}"
+        r_dict = r.json()
+        return r_dict["LayerVersions"][0]["LayerVersionArn"]
 
     def add_epsagon_token_parameter(self):
         parameters = self.t_dict["Parameters"]
