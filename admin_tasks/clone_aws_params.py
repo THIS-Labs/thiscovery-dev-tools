@@ -1,3 +1,13 @@
+"""
+Clone parameters from one AWS dev account to another.
+
+This is needed for using the thiscovery_core deploy_to_aws.py script.
+
+secrets.py will need adding/updating
+.aws/credentials will need details of both the source and target accounts
+
+"""
+
 import boto3
 
 import secrets  # sets env variables
