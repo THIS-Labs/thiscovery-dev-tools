@@ -33,9 +33,9 @@ class EpsagonIntegration:
         self.epsagon_layer = self.get_latest_epsagon_layer()
         self.epsagon_yaml = None  # edited by output_template
         self.environment = environment
+        self.epsagon_layer_version_number = None
 
-    @staticmethod
-    def get_latest_epsagon_layer() -> str:
+    def get_latest_epsagon_layer(self) -> str:
         region = "eu-west-1"
         r = requests.get(
             f"https://layers.epsagon.com/production?region={region}&name=epsagon-python-layer&max_items=1"
@@ -44,7 +44,9 @@ class EpsagonIntegration:
             r.status_code == HTTPStatus.OK
         ), f"Error fetching Epsagon layer: {r.status_code} - {r.reason}"
         r_dict = r.json()
-        return r_dict["LayerVersions"][0]["LayerVersionArn"]
+        latest_version = r_dict["LayerVersions"][0]
+        self.epsagon_layer_version_number = latest_version["Version"]
+        return latest_version["LayerVersionArn"]
 
     def add_epsagon_token_parameter(self):
         parameters = self.t_dict["Parameters"]

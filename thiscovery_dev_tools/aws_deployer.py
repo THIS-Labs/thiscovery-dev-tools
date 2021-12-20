@@ -9,7 +9,6 @@ import requests
 import thiscovery_lib.eb_utilities as eb_utils
 import thiscovery_lib.ssm_utilities as ssm_utils
 import thiscovery_lib.utilities as utils
-import warnings
 
 import thiscovery_dev_tools.epsagon_integration as ei
 
@@ -37,6 +36,8 @@ class AwsDeployer:
         self._template_yaml = self.resolve_environment_name()
         self.logger = utils.get_logger()
         self.ssm_client = ssm_utils.SsmClient()
+        self.epsagon_layer_version_number = None
+        self.thiscovery_lib_revision = None
 
     @staticmethod
     def get_git_revision():
@@ -86,6 +87,20 @@ class AwsDeployer:
             )
         environment = utils.namespace2name(secrets_namespace)
         return environment, json.loads(slack_webhooks)
+
+    def thiscovery_lib_master_revision(self):
+        lib_ls = subprocess.run(
+            [
+                "git",
+                "ls-remote",
+                "https://github.com/THIS-Institute/thiscovery-lib.git",
+            ],
+            capture_output=True,
+            check=True,
+            text=True,
+        ).stdout.strip()
+        self.thiscovery_lib_revision = lib_ls.split()[0]
+        return self.thiscovery_lib_revision
 
     def slack_message(self, message=None):
         if not message:
@@ -209,10 +224,14 @@ class AwsDeployer:
             template_as_string=self._template_yaml, environment=self.environment
         )
         epsagon_integration.main()
+        self.epsagon_layer_version_number = (
+            epsagon_integration.epsagon_layer_version_number
+        )
         self.logger.info("Ended template parsing phase")
 
     def log_deployment(self):
         self.logger.info("Posting deployment event")
+        self.thiscovery_lib_master_revision()
         deployment_dict = {
             "source": "aws_deployer",
             "detail-type": "deployment",
@@ -221,6 +240,8 @@ class AwsDeployer:
                 "environment": self.environment,
                 "revision": self.revision,
                 "branch": self.branch,
+                "epsagon_layer_version": self.epsagon_layer_version_number,
+                "thiscovery_lib_revision": self.thiscovery_lib_revision,
             },
         }
         deployment = eb_utils.ThiscoveryEvent(deployment_dict)
