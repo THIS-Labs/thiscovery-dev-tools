@@ -230,6 +230,10 @@ class AwsDeployer:
         self.logger.info("Ended template parsing phase")
 
     def log_deployment(self):
+        """
+        Posts deployment event to bus. A lambda in thiscovery-devops is
+        responsible for processing and saving this to Dynamodb
+        """
         self.logger.info("Posting deployment event")
         self.thiscovery_lib_master_revision()
         deployment_dict = {
