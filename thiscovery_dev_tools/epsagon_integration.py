@@ -30,12 +30,14 @@ class EpsagonIntegration:
 
     def __init__(self, template_as_string, environment):
         self.t_dict = json.loads(cfn_flip.to_json(template_as_string))
-        self.epsagon_layer = self.get_latest_epsagon_layer()
+        (
+            self.epsagon_layer,
+            self.epsagon_layer_version_number,
+        ) = self.get_latest_epsagon_layer()
         self.epsagon_yaml = None  # edited by output_template
         self.environment = environment
-        self.epsagon_layer_version_number = None
 
-    def get_latest_epsagon_layer(self) -> str:
+    def get_latest_epsagon_layer(self) -> tuple:
         region = "eu-west-1"
         r = requests.get(
             f"https://layers.epsagon.com/production?region={region}&name=epsagon-python-layer&max_items=1"
@@ -45,8 +47,7 @@ class EpsagonIntegration:
         ), f"Error fetching Epsagon layer: {r.status_code} - {r.reason}"
         r_dict = r.json()
         latest_version = r_dict["LayerVersions"][0]
-        self.epsagon_layer_version_number = latest_version["Version"]
-        return latest_version["LayerVersionArn"]
+        return latest_version["LayerVersionArn"], latest_version["Version"]
 
     def add_epsagon_token_parameter(self):
         parameters = self.t_dict["Parameters"]
