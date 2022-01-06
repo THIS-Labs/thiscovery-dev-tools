@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 
-from local.dev_config import GITHUB_FOLDER, SECRETS_NAMESPACE, ENVS, REPOS, COMMIT_TIMESTAMP
+from local.dev_config import (
+    GITHUB_FOLDER,
+    SECRETS_NAMESPACE,
+    ENVS,
+    REPOS,
+    COMMIT_TIMESTAMP,
+)
 import os
 import re
 import subprocess
 from prettytable import PrettyTable
-
 
 repos_table = PrettyTable()
 repos_table.field_names = [
@@ -60,7 +65,6 @@ class StackLocCounter:
             check=True,
             text=True,
         ).stdout.strip()
-
 
     def append_stack_report_to_repos_table(self):
         repos_table.add_row(
