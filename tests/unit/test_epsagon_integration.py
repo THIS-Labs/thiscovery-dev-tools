@@ -41,14 +41,18 @@ class YamlTestCase(unittest.TestCase):
 
 class EpsagonIntTestCase(unittest.TestCase):
     def test_init_ok(self):
+        with open(os.path.join(TEST_DATA_FOLDER, "raw_template_01.yaml")) as f:
+            template_string = f.read()
         integration = ei.EpsagonIntegration(
-            template_file_path=os.path.join(TEST_DATA_FOLDER, "raw_template_01.yaml")
+            template_as_string=template_string, environment="test"
         )
         self.assertIsInstance(integration.t_dict, dict)
 
     def test_main_ok(self):
+        with open(os.path.join(TEST_DATA_FOLDER, "raw_template_01.yaml")) as f:
+            template_string = f.read()
         integration = ei.EpsagonIntegration(
-            template_file_path=os.path.join(TEST_DATA_FOLDER, "raw_template_01.yaml")
+            template_as_string=template_string, environment="test"
         )
         integration.main()
         pprint(integration.epsagon_yaml)
