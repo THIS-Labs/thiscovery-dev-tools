@@ -12,7 +12,6 @@ import re
 import subprocess
 from prettytable import PrettyTable
 
-
 repos_table = PrettyTable()
 repos_table.field_names = [
     "Stack",
