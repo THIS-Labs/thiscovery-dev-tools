@@ -61,7 +61,17 @@ class EpsagonIntegration:
         prop = lambda_definition["Properties"]
         prop["Layers"] = [self.epsagon_layer]
 
-        env_variables = prop["Environment"]["Variables"]
+        try:
+            env = prop["Environment"]
+        except KeyError:
+            prop["Environment"] = dict()
+            env = prop["Environment"]
+
+        try:
+            env_variables = env["Variables"]
+        except KeyError:
+            env["Variables"] = dict()
+            env_variables = env["Variables"]
 
         handler = prop["Handler"]
         actual_handler = copy.copy(handler)
