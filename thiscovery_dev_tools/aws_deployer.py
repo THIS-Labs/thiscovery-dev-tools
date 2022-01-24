@@ -204,11 +204,16 @@ class AwsDeployer:
 
     def parse_provisioned_concurrency_setting(self):
         """
-        Strips ProvisionedConcurrencyConfig from template resources if environemnt's
-        provisioned-concurrency in AWS parameter store is set to zero (eval to False).
+        Strips ProvisionedConcurrencyConfig from template globals and resources if
+        environment's provisioned-concurrency in AWS parameter store is set to zero
+        (eval to False).
         """
         if not self.ssm_client.get_parameter("lambda/provisioned-concurrency"):
             template_dict = template_to_dict(self._template_yaml)
+            try:
+                del template_dict["Globals"]["Function"]["ProvisionedConcurrencyConfig"]
+            except KeyError:
+                pass
             for _, v in template_dict["Resources"].items():
                 try:
                     del v["Properties"]["ProvisionedConcurrencyConfig"]
