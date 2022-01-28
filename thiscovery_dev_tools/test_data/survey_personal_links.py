@@ -17,7 +17,11 @@
 #
 TEST_CREATE_PERSONAL_LINKS_EB_EVENT = {
     "account": "REDACTED",
-    "detail": {"account": "cambridge", "survey_id": "SV_2avH1JdVZa8eEAd"},
+    "detail": {
+        "account": "cambridge",
+        "survey_id": "SV_2avH1JdVZa8eEAd",
+        "project_task_id": "abcd123",
+    },
     "detail-type": "create_personal_links",
     "id": "e0c8d51e-0954-57e8-fdd0-43edaf5bad67",
     "region": "REDACTED",
@@ -40,6 +44,7 @@ TEST_UNASSIGNED_PERSONAL_LINK_DDB_ITEM = {
         "lastName": None,
         "status": "Email not sent",
         "unsubscribed": "0",
+        "project_task_id": "efgh456",
     },
     "expires": "2021-06-23T17:48:30Z",
     "modified": "2021-03-25 11:48:33.007893+00:00",
