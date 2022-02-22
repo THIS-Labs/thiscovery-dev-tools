@@ -239,9 +239,7 @@ class AwsDeployer:
     def validate_template(self):
         with open(self.parsed_template) as f:
             template_body = f.read()
-            from pprint import pprint
-
-            pprint(self.cf_client.validate_template(TemplateBody=template_body))
+            self.cf_client.validate_template(TemplateBody=template_body)
 
     def log_deployment(self):
         """
