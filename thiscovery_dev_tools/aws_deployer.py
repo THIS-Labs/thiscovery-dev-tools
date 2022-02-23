@@ -11,6 +11,7 @@ import thiscovery_lib.ssm_utilities as ssm_utils
 import thiscovery_lib.utilities as utils
 
 import thiscovery_dev_tools.epsagon_integration as ei
+from thiscovery_dev_tools.cloudformation_utilities import CloudFormationClient
 
 
 class AwsDeployer:
@@ -36,6 +37,7 @@ class AwsDeployer:
         self._template_yaml = self.resolve_environment_name()
         self.logger = utils.get_logger()
         self.ssm_client = ssm_utils.SsmClient()
+        self.cf_client = CloudFormationClient()
         self.epsagon_layer_version_number = None
         self.thiscovery_lib_revision = None
 
@@ -234,6 +236,11 @@ class AwsDeployer:
         )
         self.logger.info("Ended template parsing phase")
 
+    def validate_template(self):
+        with open(self.parsed_template) as f:
+            template_body = f.read()
+            self.cf_client.validate_template(TemplateBody=template_body)
+
     def log_deployment(self):
         """
         Posts deployment event to bus. A lambda in thiscovery-devops is
@@ -271,6 +278,7 @@ class AwsDeployer:
         if not kwargs.get("skip_confirmation", False):
             self.deployment_confirmation()
         self.parse_sam_template()
+        self.validate_template()
         if not kwargs.get("skip_build", False):
             self.build(kwargs.get("build_in_container", False))
         self.deploy(kwargs.get("confirm_cf_changes", False))
