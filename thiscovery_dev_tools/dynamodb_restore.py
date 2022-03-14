@@ -68,6 +68,10 @@ class DynamodbRestore:
         )
 
     def create_local_dump_of_aws_restored_table(self):
+        """
+        Dynamodump was removed as a dependency in setup.py to prevent conflicts with
+        recent version of boto3. To install it, use "pip install dynamodump"
+        """
         subprocess.run(
             [
                 "dynamodump",
@@ -84,6 +88,10 @@ class DynamodbRestore:
         )
 
     def update_original_table_with_restored_data(self):
+        """
+        Dynamodump was removed as a dependency in setup.py to prevent conflicts with
+        recent version of boto3. To install it, use "pip install dynamodump"
+        """
         subprocess.run(
             [
                 "dynamodump",

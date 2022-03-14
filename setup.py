@@ -14,7 +14,6 @@ setuptools.setup(
         "prettytable",
         "pyyaml",
         "cfn-flip",
-        "dynamodump",
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
