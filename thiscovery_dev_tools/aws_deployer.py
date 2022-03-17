@@ -28,10 +28,7 @@ class AwsDeployer:
         self.param_overrides = param_overrides
         self.branch = self.get_git_branch()
         self.revision = self.get_git_revision()
-        (
-            self.environment,
-            self.slack_webhooks,
-        ) = self.get_environment_variables()
+        self.environment = self.get_environment()
         self.sam_template = sam_template_path
         self.parsed_template = os.path.join(".thiscovery", "template.yaml")
         self._template_yaml = self.resolve_environment_name()
@@ -79,16 +76,15 @@ class AwsDeployer:
         return branch
 
     @staticmethod
-    def get_environment_variables():
+    def get_environment():
         try:
             secrets_namespace = os.environ["SECRETS_NAMESPACE"]
-            slack_webhooks = os.environ["SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS"]
         except KeyError as err:
             raise utils.DetailedValueError(
                 "Environment variable not set", {"KeyError": err.__repr__()}
             )
         environment = utils.namespace2name(secrets_namespace)
-        return environment, json.loads(slack_webhooks)
+        return environment
 
     def thiscovery_lib_master_revision(self):
         lib_ls = subprocess.run(
@@ -105,12 +101,18 @@ class AwsDeployer:
         return self.thiscovery_lib_revision
 
     def slack_message(self, message=None):
+        try:
+            slack_webhooks = os.environ["SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS"]
+        except KeyError as err:
+            raise utils.DetailedValueError(
+                "Environment variable not set", {"KeyError": err.__repr__()}
+            )
         if not message:
             message = f"Branch {self.branch} of {self.stack_name} has just been deployed to {self.environment}."
         header = {"Content-Type": "application/json"}
         payload = {"text": message}
         requests.post(
-            self.slack_webhooks["stackery-deployments"],
+            slack_webhooks["stackery-deployments"],
             data=json.dumps(payload),
             headers=header,
         )
@@ -272,6 +274,7 @@ class AwsDeployer:
                       build_in_container (bool): build in a Docker container
                       skip_build (bool): skip building phase
                       skip_confirmation (bool): skip deployment confirmation
+                      skip_slack_notification (bool): skip slack notification
         Returns:
 
         """
@@ -283,7 +286,8 @@ class AwsDeployer:
             self.build(kwargs.get("build_in_container", False))
         self.deploy(kwargs.get("confirm_cf_changes", False))
         self.log_deployment()
-        self.slack_message()
+        if not kwargs.get("skip_slack_notification", False):
+            self.slack_message()
 
 
 def template_to_dict(template_as_string):
