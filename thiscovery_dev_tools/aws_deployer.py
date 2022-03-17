@@ -170,26 +170,50 @@ class AwsDeployer:
 
     def deploy(self, confirm_cf_changeset):
         self.logger.info("Starting deployment phase")
-        aws_profile = utils.namespace2profile(utils.name2namespace(self.environment))
-        command = [
-            "sam",
-            "deploy",
-            "--debug",
-            "--profile",
-            aws_profile,
-            "--region",
-            "eu-west-1",
-            "--resolve-s3",
-            "--capabilities",
-            "CAPABILITY_NAMED_IAM",
-            "--no-fail-on-empty-changeset",
-            "--stack-name",
-            f"{self.stack_name}-{self.environment}",
-            "--parameter-overrides",
-            self.get_parameter_overrides(),
-        ]
+        deployment_method = os.environ.get("DEPLOYMENT_METHOD")
+        if deployment_method == "github_actions":
+            command = [
+                "sam",
+                "deploy",
+                "--debug",
+                "--region",
+                "eu-west-1",
+                "--s3-bucket",
+                os.environ["TESTING_ARTIFACTS_BUCKET"],
+                "--capabilities",
+                "CAPABILITY_IAM",
+                "--no-fail-on-empty-changeset",
+                "--stack-name",
+                f"{self.stack_name}-{self.environment}",
+                "--role-arn",
+                os.environ["TESTING_CLOUDFORMATION_EXECUTION_ROLE"],
+                "--parameter-overrides",
+                self.get_parameter_overrides(),
+            ]
+        else:
+            aws_profile = utils.namespace2profile(
+                utils.name2namespace(self.environment)
+            )
+            command = [
+                "sam",
+                "deploy",
+                "--debug",
+                "--profile",
+                aws_profile,
+                "--region",
+                "eu-west-1",
+                "--resolve-s3",
+                "--capabilities",
+                "CAPABILITY_NAMED_IAM",
+                "--no-fail-on-empty-changeset",
+                "--stack-name",
+                f"{self.stack_name}-{self.environment}",
+                "--parameter-overrides",
+                self.get_parameter_overrides(),
+            ]
         if confirm_cf_changeset:
             command.append("--confirm-changeset")
+        print("command:", command)
         subprocess.run(
             command,
             check=True,
