@@ -101,11 +101,17 @@ class AwsDeployer:
         return self.thiscovery_lib_revision
 
     def slack_message(self, message=None):
+        env_var_name = "SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS"
         try:
-            slack_webhooks = os.environ["SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS"]
+            slack_webhooks = json.loads(os.environ[env_var_name])
         except KeyError as err:
             raise utils.DetailedValueError(
-                "Environment variable not set", {"KeyError": err.__repr__()}
+                f"Environment variable {env_var_name} not set", {"KeyError": err.__repr__()}
+            )
+        except json.decoder.JSONDecodeError:
+            raise utils.DetailedValueError(
+                f'Environment variable {env_var_name} should be the JSON representation of a dictionary '
+                f'(e.g. `{{"stackery-deployments": "****", "Andre": "****"}}`', dict()
             )
         if not message:
             message = f"Branch {self.branch} of {self.stack_name} has just been deployed to {self.environment}."
