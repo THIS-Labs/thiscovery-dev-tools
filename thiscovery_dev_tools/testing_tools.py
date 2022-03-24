@@ -15,10 +15,12 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+import json
 import os
 import time
 import unittest
 import uuid
+import warnings
 import yaml
 from dateutil import parser
 from http import HTTPStatus
@@ -150,12 +152,19 @@ class BaseTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-
+        # staging and production fail-safe exception
         if os.environ["UNIT_TEST_NAMESPACE"] in ["/staging/", "/prod/"]:
             raise ValueError(
                 "Are you sure you want to run tests on %s?"
                 % os.environ["UNIT_TEST_NAMESPACE"]
             )
+
+        # deprecation warnings handling (inspired by https://stackoverflow.com/a/67484991)
+        allow_deprecation_list = json.loads(os.environ.get("ALLOW_DEPRECATION", "null"))
+        warnings.filterwarnings("error", category=DeprecationWarning)
+        if allow_deprecation_list:
+            for module in allow_deprecation_list:
+                warnings.filterwarnings("default", category=DeprecationWarning, module=module)
 
         utils.set_running_unit_tests(True)
         if (
