@@ -162,8 +162,9 @@ class BaseTestCase(unittest.TestCase):
         # deprecation warnings handling (inspired by https://stackoverflow.com/a/67484991)
         allow_deprecation_list = json.loads(os.environ.get("ALLOW_DEPRECATION", "null"))
         warnings.filterwarnings("error", category=DeprecationWarning)
-        for module in allow_deprecation_list:
-            warnings.filterwarnings("default", category=DeprecationWarning, module=module)
+        if allow_deprecation_list:
+            for module in allow_deprecation_list:
+                warnings.filterwarnings("default", category=DeprecationWarning, module=module)
 
         utils.set_running_unit_tests(True)
         if (
