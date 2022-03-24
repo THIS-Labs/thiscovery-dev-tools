@@ -150,6 +150,10 @@ class BaseTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+
+        if os.environ['UNIT_TEST_NAMESPACE'] in ['/staging/', '/prod/']:
+            raise ValueError('Are you sure you want to run tests on staging')
+
         utils.set_running_unit_tests(True)
         if (
             cls.secrets_client is None
