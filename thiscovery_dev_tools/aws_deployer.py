@@ -106,12 +106,14 @@ class AwsDeployer:
             slack_webhooks = json.loads(os.environ[env_var_name])
         except KeyError as err:
             raise utils.DetailedValueError(
-                f"Environment variable {env_var_name} not set", {"KeyError": err.__repr__()}
+                f"Environment variable {env_var_name} not set",
+                {"KeyError": err.__repr__()},
             )
         except json.decoder.JSONDecodeError:
             raise utils.DetailedValueError(
-                f'Environment variable {env_var_name} should be the JSON representation of a dictionary '
-                f'(e.g. `{{"stackery-deployments": "****", "Andre": "****"}}`', dict()
+                f"Environment variable {env_var_name} should be the JSON representation of a dictionary "
+                f'(e.g. `{{"stackery-deployments": "****", "Andre": "****"}}`',
+                dict(),
             )
         if not message:
             message = f"Branch {self.branch} of {self.stack_name} has just been deployed to {self.environment}."
@@ -310,9 +312,9 @@ class AwsDeployer:
         """
         if not kwargs.get("skip_confirmation", False):
             self.deployment_confirmation()
-        self.parse_sam_template()
-        self.validate_template()
         if not kwargs.get("skip_build", False):
+            self.parse_sam_template()
+            self.validate_template()
             self.build(kwargs.get("build_in_container", False))
         self.deploy(kwargs.get("confirm_cf_changes", False))
         self.log_deployment()

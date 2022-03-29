@@ -77,7 +77,7 @@ class EpsagonIntegration:
         actual_handler = copy.copy(handler)
         prop["Handler"] = "epsagon.wrapper"
         env_variables["EPSAGON_HANDLER"] = actual_handler
-        env_variables["EPSAGON_APP_NAME"] = {"Ref": "${AWS::StackName}"}
+        env_variables["EPSAGON_APP_NAME"] = {"Fn::Sub": "${AWS::StackName}"}
         env_variables["EPSAGON_TOKEN"] = {"Ref": self.epsagon_token_parameter_name}
         return lambda_definition
 
