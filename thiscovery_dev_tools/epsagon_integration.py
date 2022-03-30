@@ -26,8 +26,6 @@ from http import HTTPStatus
 
 
 class EpsagonIntegration:
-    epsagon_token_parameter_name = "EpsagontokenAsString"
-
     def __init__(self, template_as_string, environment):
         self.t_dict = json.loads(cfn_flip.to_json(template_as_string))
         (
@@ -48,14 +46,6 @@ class EpsagonIntegration:
         r_dict = r.json()
         latest_version = r_dict["LayerVersions"][0]
         return latest_version["LayerVersionArn"], latest_version["Version"]
-
-    def add_epsagon_token_parameter(self):
-        parameters = self.t_dict["Parameters"]
-        parameters[self.epsagon_token_parameter_name] = {
-            "Type": "AWS::SecretsManager::Secret::Value<String>",
-            "Description": "Epsagon token",
-            "Default": f"/{self.environment}/epsagon-connection",
-        }
 
     def add_tracing_to_lambda(self, lambda_definition: dict) -> dict:
         prop = lambda_definition["Properties"]
@@ -78,7 +68,9 @@ class EpsagonIntegration:
         prop["Handler"] = "epsagon.wrapper"
         env_variables["EPSAGON_HANDLER"] = actual_handler
         env_variables["EPSAGON_APP_NAME"] = {"Fn::Sub": "${AWS::StackName}"}
-        env_variables["EPSAGON_TOKEN"] = {"Ref": self.epsagon_token_parameter_name}
+        env_variables[
+            "EPSAGON_TOKEN"
+        ] = f"{{{{resolve:secretsmanager:/{self.environment}/epsagon-connection:SecretString:token}}}}"
         return lambda_definition
 
     def trace_lambdas(self):
@@ -94,6 +86,5 @@ class EpsagonIntegration:
             f.write(self.epsagon_yaml)
 
     def main(self):
-        self.add_epsagon_token_parameter()
         self.trace_lambdas()
         self.output_template()
