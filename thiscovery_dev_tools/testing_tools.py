@@ -148,7 +148,6 @@ class BaseTestCase(unittest.TestCase):
     """
 
     maxDiff = None
-    secrets_client = None
 
     @classmethod
     def setUpClass(cls):
@@ -167,22 +166,10 @@ class BaseTestCase(unittest.TestCase):
                 warnings.filterwarnings("default", category=DeprecationWarning, module=module)
 
         utils.set_running_unit_tests(True)
-        if (
-            cls.secrets_client is None
-        ):  # initialise a new secrets_client only if another class instance has not done so yet
-            cls.secrets_client = utils.SecretsManager()
-        cls.secrets_client.create_or_update_secret(
-            "runtime-parameters", {"running-tests": "true"}
-        )
         cls.logger = utils.get_logger()
 
     @classmethod
     def tearDownClass(cls):
-        if cls.secrets_client is None:
-            cls.secrets_client = utils.SecretsManager()
-        cls.secrets_client.create_or_update_secret(
-            "runtime-parameters", {"running-tests": "false"}
-        )
         utils.set_running_unit_tests(False)
 
     def value_test_and_remove(self, entity_dict, attribute_name, expected_value):
