@@ -186,6 +186,8 @@ class AwsDeployer:
                 "--debug",
                 "--region",
                 "eu-west-1",
+                "--template",
+                os.environ["PACKAGED_TEMPLATE"],
                 "--s3-bucket",
                 os.environ["ARTIFACTS_BUCKET"],
                 "--capabilities",
