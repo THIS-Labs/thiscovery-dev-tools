@@ -21,7 +21,15 @@ Entry points to use some of this module's capabilities from the command line
 """
 
 import argparse
+import sys
 from thiscovery_dev_tools.aws_deployer import AwsDeployer
+
+
+class DefaultHelpParser(argparse.ArgumentParser):
+    def error(self, message):
+        sys.stderr.write("error: %s\n" % message)
+        self.print_help()
+        sys.exit(2)
 
 
 def aws_deployer_build(args):
@@ -37,29 +45,11 @@ def aws_deployer_deploy(args):
 
 
 def main():
-    sign_off = """
-#   Thiscovery - THIS Institute’s citizen science platform
-#   Copyright (C) 2022 THIS Institute
-#
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU Affero General Public License as
-#   published by the Free Software Foundation, either version 3 of the
-#   License, or (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU Affero General Public License for more details.
-#
-#   A copy of the GNU Affero General Public License is available in the
-#   docs folder of this project.  It is also available www.gnu.org/licenses/
-"""
     description_text = "Thiscovery command line tool"
 
     # create the top-level parser
-    parser = argparse.ArgumentParser(
+    parser = DefaultHelpParser(
         description=description_text,
-        epilog=sign_off,
         prog="Thiscovery",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
