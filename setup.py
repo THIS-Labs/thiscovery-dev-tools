@@ -10,6 +10,9 @@ setuptools.setup(
     author="Thiscovery team",
     author_email="support@thiscovery.org",
     description="Thiscovery development tools",
+    entry_points={
+        "console_scripts": ["thiscovery=thiscovery_dev_tools.command_line:main"],
+    },
     install_requires=[
         "prettytable",
         "pyyaml",
