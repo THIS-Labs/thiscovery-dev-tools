@@ -21,15 +21,7 @@ Entry points to use some of this module's capabilities from the command line
 """
 
 import argparse
-import sys
 from thiscovery_dev_tools.aws_deployer import AwsDeployer
-
-
-class DefaultHelpParser(argparse.ArgumentParser):
-    def error(self, message):
-        sys.stderr.write("error: %s\n" % message)
-        self.print_help()
-        sys.exit(2)
 
 
 def aws_deployer_build(args):
@@ -48,7 +40,7 @@ def main():
     description_text = "Thiscovery command line tool"
 
     # create the top-level parser
-    parser = DefaultHelpParser(
+    parser = argparse.ArgumentParser(
         description=description_text,
         prog="Thiscovery",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -70,4 +62,8 @@ def main():
     parser_deploy.set_defaults(func=aws_deployer_deploy)
 
     args = parser.parse_args()
-    args.func(args)
+    try:
+        args.func(args)
+    except AttributeError:
+        print("ERROR: You must use an available subcommand: build, deploy", "\n")
+        parser.print_usage()
