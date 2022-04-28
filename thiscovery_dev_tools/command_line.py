@@ -48,11 +48,11 @@ def main():
     subparsers = parser.add_subparsers(help="sub-command help")
 
     # create the parser for the "build" command
-    parser_build = subparsers.add_parser("build", help="build help")
+    parser_build = subparsers.add_parser("build", help="builds a thiscovery stack")
     parser_build.set_defaults(func=aws_deployer_build)
 
     # create the parser for the "deploy" command
-    parser_deploy = subparsers.add_parser("deploy", help="deploy help")
+    parser_deploy = subparsers.add_parser("deploy", help="deploys a thiscovery stack")
     parser_deploy.add_argument(
         "stack_name",
         type=str,
