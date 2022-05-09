@@ -42,7 +42,7 @@ if __name__ == "__main__":
             param["Name"] = param_name.replace(conf.SOURCE_ENV, conf.TARGET_ENV)
             if conf.SOURCE_ENV in param_value:
                 prompt = input(
-                    f"Replace '{conf.SOURCE_ENV}' for 'conf.TARGET_ENV' in value of parameter {param_name}: {param_value}? (y/N)"
+                    f"Replace '{conf.SOURCE_ENV}' for '{conf.TARGET_ENV}' in value of parameter {param_name}: {param_value}? (y/N)"
                 )
                 if prompt.lower() == "y":
                     param["Value"] = param_value.replace(
@@ -55,6 +55,6 @@ if __name__ == "__main__":
             try:
                 response = target_client.put_parameter(**param)
             except target_client.exceptions.ParameterAlreadyExists:
-                print(param_name + " already exists, skipping")
+                print(param["Name"] + " already exists, skipping")
             else:
-                print(f"Parameter {param_name} successfully created")
+                print(f"Parameter {param['Name']} successfully created")
