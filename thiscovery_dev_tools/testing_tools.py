@@ -152,9 +152,13 @@ class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # staging and production fail-safe exception
-        if os.environ["UNIT_TEST_NAMESPACE"] in ["/staging/", "/prod/"]:
+        if os.environ["UNIT_TEST_NAMESPACE"] in [
+            "/staging/",
+            "/prod/",
+            "/router-prod/",
+        ]:
             raise ValueError(
-                "Are you sure you want to run tests on %s?"
+                "Naughty developer! You must not run tests on %s?"
                 % os.environ["UNIT_TEST_NAMESPACE"]
             )
 
@@ -163,7 +167,9 @@ class BaseTestCase(unittest.TestCase):
         warnings.filterwarnings("error", category=DeprecationWarning)
         if allow_deprecation_list:
             for module in allow_deprecation_list:
-                warnings.filterwarnings("default", category=DeprecationWarning, module=module)
+                warnings.filterwarnings(
+                    "default", category=DeprecationWarning, module=module
+                )
 
         utils.set_running_unit_tests(True)
         cls.logger = utils.get_logger()
