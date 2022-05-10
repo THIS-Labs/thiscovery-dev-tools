@@ -1,3 +1,12 @@
+"""Reinstall all packages in requirements.txt that are located on GitHub
+
+These packages are normally updated by manually uninstalling and reinstalling using pip.
+
+Versioning of these packages confuses pip, so running 'pip install --upgrade'
+doesn't work
+
+"""
+
 import subprocess
 import sys
 
