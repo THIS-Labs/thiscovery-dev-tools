@@ -4,7 +4,7 @@ import sys
 
 def uninstall(package):
     print('pip uninstall ' + package)
-    subprocess.check_call([sys.executable, "-m", "pip", "uninstall" "--yes", package])
+    subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "--yes", package])
 
 
 def install(package):
