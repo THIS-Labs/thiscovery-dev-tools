@@ -1,9 +1,16 @@
 """Reinstall all packages in requirements.txt that are located on GitHub
 
-These packages are normally updated by manually uninstalling and reinstalling using pip.
+These packages are normally updated by manually uninstalling and reinstalling
+using pip.
 
 Versioning of these packages confuses pip, so running 'pip install --upgrade'
 doesn't work
+
+Run this script by
+    - installing thiscovery-dev-tools in the stack you are working on
+    - Create a PyCharm run configuration pointing directly to this script
+    - Working dir should be the top level dir of the stack, in order
+      to find the correct requirements.txt
 
 """
 
