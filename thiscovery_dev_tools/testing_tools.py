@@ -17,6 +17,7 @@
 #
 import json
 import os
+import re
 import time
 import unittest
 import uuid
@@ -26,6 +27,7 @@ from dateutil import parser
 from http import HTTPStatus
 
 import thiscovery_lib.utilities as utils
+from thiscovery_lib.cloudwatch_utilities import CloudWatchLogsClient
 from thiscovery_lib.dynamodb_utilities import Dynamodb
 from thiscovery_lib.eb_utilities import ThiscoveryEvent
 
@@ -351,11 +353,57 @@ def aws_patch(url, request_body):
 
 
 def test_eb_request(local_method, aws_eb_event, aws_processing_delay=0):
+    warnings.warn(
+        "This method will be deprecated soon; use test_eb_request_v2 instead",
+        PendingDeprecationWarning,
+    )
     if tests_running_on_aws():
         te = ThiscoveryEvent(event=aws_eb_event)
         result = te.put_event()
         time.sleep(aws_processing_delay)
         return result
+    else:
+        return local_method(aws_eb_event, dict())
+
+
+def test_eb_request_v2(
+    local_method,
+    aws_eb_event: dict,
+    lambda_name: str,
+    stack_name: str,
+    log_query_string: str = "Function result",
+    aws_processing_delay: int = 0,
+):
+    """
+    Test processes triggered via EventBridge
+
+    Args:
+        local_method: function to be called when testing locally
+        aws_eb_event: event to be posted to event bus when testing on AWS
+        lambda_name: resource name of AWS lambda that will be processing event
+        stack_name: name of stack lambda_name belongs to
+        log_query_string: logs will be queried for this string
+        aws_processing_delay: time in seconds to wait before fetching logs
+
+    Returns:
+    """
+    if tests_running_on_aws():
+        te = ThiscoveryEvent(event=aws_eb_event)
+        result = te.put_event()
+        assert (
+            result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        ), "Failed to post event to event bus"
+        time.sleep(aws_processing_delay)
+        logs_client = CloudWatchLogsClient()
+        log_message = logs_client.find_in_log_message(
+            log_group_name=lambda_name,
+            query_string=log_query_string,
+            stack_name=stack_name,
+        )
+        log_message_re = re.compile("\{.+", re.DOTALL)
+        m = log_message_re.search(log_message)
+        log_dict = json.loads(m.group())
+        return log_dict["result"]
     else:
         return local_method(aws_eb_event, dict())
 
