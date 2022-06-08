@@ -152,9 +152,13 @@ class BaseTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # staging and production fail-safe exception
-        if os.environ["UNIT_TEST_NAMESPACE"] in ["/staging/", "/prod/"]:
+        if os.environ["UNIT_TEST_NAMESPACE"] in [
+            "/staging/",
+            "/prod/",
+            "/router-prod/",
+        ]:
             raise ValueError(
-                "Are you sure you want to run tests on %s?"
+                "Naughty developer! You must not run tests on %s?"
                 % os.environ["UNIT_TEST_NAMESPACE"]
             )
 
