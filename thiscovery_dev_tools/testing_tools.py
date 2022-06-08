@@ -389,6 +389,7 @@ def test_eb_request_v2(
     """
     if tests_running_on_aws():
         te = ThiscoveryEvent(event=aws_eb_event)
+        earliest_log_time = utils.utc_now_timestamp()
         result = te.put_event()
         assert (
             result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
@@ -399,6 +400,7 @@ def test_eb_request_v2(
             log_group_name=lambda_name,
             query_string=log_query_string,
             stack_name=stack_name,
+            earliest_log=earliest_log_time,
         )
         log_message_re = re.compile("\{.+", re.DOTALL)
         m = log_message_re.search(log_message)
