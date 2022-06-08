@@ -163,7 +163,9 @@ class BaseTestCase(unittest.TestCase):
         warnings.filterwarnings("error", category=DeprecationWarning)
         if allow_deprecation_list:
             for module in allow_deprecation_list:
-                warnings.filterwarnings("default", category=DeprecationWarning, module=module)
+                warnings.filterwarnings(
+                    "default", category=DeprecationWarning, module=module
+                )
 
         utils.set_running_unit_tests(True)
         cls.logger = utils.get_logger()
