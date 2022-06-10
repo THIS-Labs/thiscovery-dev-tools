@@ -25,6 +25,7 @@ import warnings
 import yaml
 from dateutil import parser
 from http import HTTPStatus
+from typing import Union
 
 import thiscovery_lib.utilities as utils
 from thiscovery_lib.cloudwatch_utilities import CloudWatchLogsClient
@@ -371,7 +372,6 @@ def test_eb_request_v2(
     aws_eb_event: dict,
     lambda_name: str,
     stack_name: str,
-    log_query_string: str,
     aws_processing_delay: int = 0,
 ):
     """
@@ -382,12 +382,13 @@ def test_eb_request_v2(
         aws_eb_event: event to be posted to event bus when testing on AWS
         lambda_name: resource name of AWS lambda that will be processing event
         stack_name: name of stack lambda_name belongs to
-        log_query_string: logs will be queried for this string
         aws_processing_delay: time in seconds to wait before fetching logs
 
     Returns:
     """
     if tests_running_on_aws():
+        test_run_id = str(utils.new_correlation_id())
+        aws_eb_event["detail"]["debug_test_run_id"] = test_run_id
         te = ThiscoveryEvent(event=aws_eb_event)
         earliest_log_time = utils.utc_now_timestamp() * 1000  # miliseconds
         result = te.put_event()
@@ -398,7 +399,7 @@ def test_eb_request_v2(
         logs_client = CloudWatchLogsClient()
         log_message = logs_client.find_in_log_message(
             log_group_name=lambda_name,
-            query_string=[log_query_string, "Function result"],
+            query_string=[test_run_id, "Function result"],
             stack_name=stack_name,
             earliest_log=earliest_log_time,
         )
