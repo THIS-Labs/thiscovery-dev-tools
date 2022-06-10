@@ -371,7 +371,7 @@ def test_eb_request_v2(
     aws_eb_event: dict,
     lambda_name: str,
     stack_name: str,
-    log_query_string: str = "Function result",
+    log_query_string: str,
     aws_processing_delay: int = 0,
 ):
     """
@@ -398,7 +398,7 @@ def test_eb_request_v2(
         logs_client = CloudWatchLogsClient()
         log_message = logs_client.find_in_log_message(
             log_group_name=lambda_name,
-            query_string=log_query_string,
+            query_string=[log_query_string, "Function result"],
             stack_name=stack_name,
             earliest_log=earliest_log_time,
         )
