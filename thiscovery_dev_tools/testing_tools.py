@@ -389,7 +389,7 @@ def test_eb_request_v2(
     """
     if tests_running_on_aws():
         te = ThiscoveryEvent(event=aws_eb_event)
-        earliest_log_time = utils.utc_now_timestamp()
+        earliest_log_time = utils.utc_now_timestamp() * 1000  # miliseconds
         result = te.put_event()
         assert (
             result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
