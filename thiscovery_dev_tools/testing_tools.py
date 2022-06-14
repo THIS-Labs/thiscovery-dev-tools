@@ -404,9 +404,16 @@ def test_eb_request_v2(
             earliest_log=earliest_log_time,
         )
         log_message_re = re.compile("\{.+", re.DOTALL)
-        m = log_message_re.search(log_message)
-        log_dict = json.loads(m.group())
-        return log_dict["result"]
+        try:
+            m = log_message_re.search(log_message)
+        except TypeError:
+            raise utils.ObjectDoesNotExistError(
+                f"Log message matching 'Function result' and test_run_id {test_run_id} not found in log_group_name {lambda_name}",
+                details=dict(),
+            )
+        else:
+            log_dict = json.loads(m.group())
+            return log_dict["result"]
     else:
         return local_method(aws_eb_event, dict())
 
