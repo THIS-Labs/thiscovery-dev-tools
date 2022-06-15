@@ -17,6 +17,7 @@
 #
 import json
 import os
+import re
 import time
 import unittest
 import uuid
@@ -24,8 +25,10 @@ import warnings
 import yaml
 from dateutil import parser
 from http import HTTPStatus
+from typing import Union
 
 import thiscovery_lib.utilities as utils
+from thiscovery_lib.cloudwatch_utilities import CloudWatchLogsClient
 from thiscovery_lib.dynamodb_utilities import Dynamodb
 from thiscovery_lib.eb_utilities import ThiscoveryEvent
 
@@ -351,11 +354,69 @@ def aws_patch(url, request_body):
 
 
 def test_eb_request(local_method, aws_eb_event, aws_processing_delay=0):
+    warnings.warn(
+        "This method will be deprecated soon; use test_eb_request_v2 instead",
+        PendingDeprecationWarning,
+    )
     if tests_running_on_aws():
         te = ThiscoveryEvent(event=aws_eb_event)
         result = te.put_event()
         time.sleep(aws_processing_delay)
         return result
+    else:
+        return local_method(aws_eb_event, dict())
+
+
+def test_eb_request_v2(
+    local_method,
+    aws_eb_event: dict,
+    lambda_name: str,
+    stack_name: str,
+    aws_processing_delay: int = 0,
+):
+    """
+    Test processes triggered via EventBridge
+
+    Args:
+        local_method: function to be called when testing locally
+        aws_eb_event: event to be posted to event bus when testing on AWS
+        lambda_name: resource name of AWS lambda that will be processing event
+        stack_name: name of stack lambda_name belongs to
+        aws_processing_delay: time in seconds to wait before fetching logs
+
+    Returns:
+        Return value of local_method or AWS Lambda, which are the same because
+        local_method is always an AWS Lambda handler
+    """
+    if tests_running_on_aws():
+        test_run_id = str(utils.new_correlation_id())
+        aws_eb_event["detail"]["debug_test_run_id"] = test_run_id
+        te = ThiscoveryEvent(event=aws_eb_event)
+        earliest_log_time = utils.utc_now_timestamp() * 1000  # milliseconds
+        result = te.put_event()
+        assert (
+            result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        ), "Failed to post event to event bus"
+        time.sleep(aws_processing_delay)
+        logs_client = CloudWatchLogsClient()
+        log_message = logs_client.find_in_log_message(
+            log_group_name=lambda_name,
+            query_string=[test_run_id, "Function result"],
+            stack_name=stack_name,
+            earliest_log=earliest_log_time,
+        )
+        log_message_re = re.compile("\{.+", re.DOTALL)
+        try:
+            m = log_message_re.search(log_message)
+        except TypeError:
+            raise utils.ObjectDoesNotExistError(
+                f"Log message matching 'Function result' and test_run_id {test_run_id} not "
+                f"found in log_group_name {lambda_name}",
+                details=dict(),
+            )
+        else:
+            log_dict = json.loads(m.group())
+            return log_dict["result"]
     else:
         return local_method(aws_eb_event, dict())
 
