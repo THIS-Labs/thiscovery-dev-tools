@@ -385,12 +385,14 @@ def test_eb_request_v2(
         aws_processing_delay: time in seconds to wait before fetching logs
 
     Returns:
+        Return value of local_method or AWS Lambda, which are the same because
+        local_method is always an AWS Lambda handler
     """
     if tests_running_on_aws():
         test_run_id = str(utils.new_correlation_id())
         aws_eb_event["detail"]["debug_test_run_id"] = test_run_id
         te = ThiscoveryEvent(event=aws_eb_event)
-        earliest_log_time = utils.utc_now_timestamp() * 1000  # miliseconds
+        earliest_log_time = utils.utc_now_timestamp() * 1000  # milliseconds
         result = te.put_event()
         assert (
             result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
@@ -408,7 +410,8 @@ def test_eb_request_v2(
             m = log_message_re.search(log_message)
         except TypeError:
             raise utils.ObjectDoesNotExistError(
-                f"Log message matching 'Function result' and test_run_id {test_run_id} not found in log_group_name {lambda_name}",
+                f"Log message matching 'Function result' and test_run_id {test_run_id} not "
+                f"found in log_group_name {lambda_name}",
                 details=dict(),
             )
         else:
