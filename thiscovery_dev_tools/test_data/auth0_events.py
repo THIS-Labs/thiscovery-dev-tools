@@ -79,56 +79,47 @@ SUCCESSFUL_LOGIN = {
 }
 
 SUCCESSFUL_REGISTRATION = {
-    "event_type": "ss",
-    "event_date": "2022-02-25 10:48:31.036",
-    "created": "2022-02-25 10:48:43.852909+00:00",
-    "details": {
-        "detail-type": "Auth0 log",
-        "resources": [],
-        "id": "REDACTED",
-        "source": "REDACTED",
-        "time": "2022-02-25T10:48:43Z",
-        "detail": {
-            "data": {
-                "date": "2022-02-25T10:48:31.036Z",
-                "log_id": "90020220225104831160441788900872658485194909784700092514",
-                "user_name": "altha@email.co.uk",
-                "ip": "REDACTED",
-                "description": "",
-                "strategy_type": "database",
-                "type": "ss",
-                "client_id": "REDACTED",
-                "connection_id": "con_C72rtu1sAF9UFXmR",
-                "user_id": "REDACTED",
-                "connection": "Username-Password-Authentication",
-                "details": {
-                    "body": {
-                        "password": "*****",
-                        "user_metadata": {
-                            "last_name": "Alcorn",
-                            "country": "GB",
-                            "first_name": "Altha",
-                            "citsci_uuid": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc"
-                        },
-                        "name": "Altha Alcorn",
-                        "connection": "Username-Password-Authentication",
-                        "tenant": "thiscovery",
-                        "client_id": "REDACTED",
-                        "email": "altha@email.co.uk"
-                    }
-                },
-                "strategy": "auth0",
-                "client_name": "Thiscovery",
-                "user_agent": "GuzzleHttp/6.3.3 curl/7.58.0 PHP/7.4.26"
-            },
-            "log_id": "90020220225104831160441788900872658485194909784700092514"
-        },
-        "region": "REDACTED",
-        "version": "0",
-        "account": "REDACTED"
-    },
+    "detail-type": "Auth0 log",
+    "resources": [],
     "id": "REDACTED",
-    "user_name": "altha@email.co.uk",
-    "modified": "2022-02-25 10:48:43.852909+00:00",
-    "type": "ss"
+    "source": "REDACTED",
+    "time": "2022-02-25T10:48:43Z",
+    "detail": {
+        "data": {
+            "date": "2022-02-25T10:48:31.036Z",
+            "log_id": "90020220225104831160441788900872658485194909784700092514",
+            "user_name": "altha@email.co.uk",
+            "ip": "REDACTED",
+            "description": "",
+            "strategy_type": "database",
+            "type": "ss",
+            "client_id": "REDACTED",
+            "connection_id": "con_C72rtu1sAF9UFXmR",
+            "user_id": "REDACTED",
+            "connection": "Username-Password-Authentication",
+            "details": {
+                "body": {
+                    "password": "*****",
+                    "user_metadata": {
+                        "last_name": "Alcorn",
+                        "country": "GB",
+                        "first_name": "Altha",
+                        "citsci_uuid": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
+                    },
+                    "name": "Altha Alcorn",
+                    "connection": "Username-Password-Authentication",
+                    "tenant": "thiscovery",
+                    "client_id": "REDACTED",
+                    "email": "altha@email.co.uk",
+                }
+            },
+            "strategy": "auth0",
+            "client_name": "Thiscovery",
+            "user_agent": "GuzzleHttp/6.3.3 curl/7.58.0 PHP/7.4.26",
+        },
+        "log_id": "90020220225104831160441788900872658485194909784700092514",
+    },
+    "region": "REDACTED",
+    "version": "0",
+    "account": "REDACTED",
 }
