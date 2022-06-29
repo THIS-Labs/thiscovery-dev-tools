@@ -102,6 +102,16 @@ def tests_running_on_aws():
         )
 
 
+def tests_running_on_github_actions():
+    """
+    Checks if tests are running in a GitHub Actions job
+    """
+    deployment_method = os.environ.get("DEPLOYMENT_METHOD")
+    if deployment_method == "github_actions":
+        return True
+    return False
+
+
 class BaseDdbMixin:
     @classmethod
     def get_ddb_client(cls, stack_name):
@@ -400,7 +410,7 @@ def test_eb_request_v2(
         logs_client = CloudWatchLogsClient()
         attempts = 0
         while attempts <= aws_processing_delay:
-            time.sleep(1)
+            time.sleep(10)
             results = logs_client.query_one_log_group(
                 log_group_name=lambda_name,
                 query_string=[test_run_id, "Function result"],
