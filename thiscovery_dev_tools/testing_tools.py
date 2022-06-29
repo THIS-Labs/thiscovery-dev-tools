@@ -392,7 +392,7 @@ def test_eb_request_v2(
         aws_eb_event: event to be posted to event bus when testing on AWS
         lambda_name: resource name of AWS lambda that will be processing event
         stack_name: name of stack lambda_name belongs to
-        aws_processing_delay: max time to wait before giving up querying logs
+        aws_processing_delay: time in seconds to wait before fetching logs
 
     Returns:
         Return value of local_method or AWS Lambda, which are the same because
@@ -402,38 +402,31 @@ def test_eb_request_v2(
         test_run_id = str(utils.new_correlation_id())
         aws_eb_event["detail"]["debug_test_run_id"] = test_run_id
         te = ThiscoveryEvent(event=aws_eb_event)
-        earliest_log_time = int(utils.utc_now_timestamp() * 1000)  # milliseconds
+        earliest_log_time = utils.utc_now_timestamp() * 1000  # milliseconds
         result = te.put_event()
         assert (
             result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
         ), "Failed to post event to event bus"
+        time.sleep(aws_processing_delay)
         logs_client = CloudWatchLogsClient()
-        attempts = 0
-        while attempts <= aws_processing_delay:
-            time.sleep(10)
-            results = logs_client.query_one_log_group(
-                log_group_name=lambda_name,
-                query_string=[test_run_id, "Function result"],
-                stack_name=stack_name,
-                start_time=earliest_log_time,
-            )
-            if results:
-                break
-            attempts += 1
-
+        log_message = logs_client.find_in_log_message(
+            log_group_name=lambda_name,
+            query_string=[test_run_id, "Function result"],
+            stack_name=stack_name,
+            earliest_log=earliest_log_time,
+        )
+        log_message_re = re.compile("\{.+", re.DOTALL)
         try:
-            log_message = results[0][1]["value"]
-        except IndexError:
+            m = log_message_re.search(log_message)
+        except TypeError:
             raise utils.ObjectDoesNotExistError(
                 f"Log message matching 'Function result' and test_run_id {test_run_id} not "
                 f"found in log_group_name {lambda_name}",
                 details=dict(),
             )
-
-        log_message_re = re.compile("\{.+", re.DOTALL)
-        m = log_message_re.search(log_message)
-        log_dict = json.loads(m.group())
-        return log_dict["result"]
+        else:
+            log_dict = json.loads(m.group())
+            return log_dict["result"]
     else:
         return local_method(aws_eb_event, dict())
 
