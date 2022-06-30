@@ -106,10 +106,7 @@ def tests_running_on_github_actions():
     """
     Checks if tests are running in a GitHub Actions job
     """
-    deployment_method = os.environ.get("DEPLOYMENT_METHOD")
-    if deployment_method == "github_actions":
-        return True
-    return False
+    return os.environ.get("DEPLOYMENT_METHOD") == "github_actions"
 
 
 class BaseDdbMixin:
@@ -415,7 +412,7 @@ def test_eb_request_v2(
         ), "Failed to post event to event bus"
         time.sleep(aws_processing_delay)
         logs_client = CloudWatchLogsClient()
-        query_list = [test_run_id, "Function result"]
+        query_list = [test_run_id, utils.FUNCTION_RESULT_STR]
         log_message = logs_client.find_in_log_message(
             log_group_name=lambda_name,
             query_string=query_list,
@@ -432,7 +429,7 @@ def test_eb_request_v2(
             query_attempts = 0
             logger = utils.get_logger()
             logger.debug(
-                f"Log message matching 'Function result' and test_run_id {test_run_id} not "
+                f"Log message matching '{utils.FUNCTION_RESULT_STR}' and test_run_id {test_run_id} not "
                 f"found in latest stream of log_group_name {lambda_name}. Attempting "
                 f"CloudWatch Log Insights querying. Please note that this is a slow process "
                 f"(your machine is probably NOT hanging)"
@@ -453,7 +450,7 @@ def test_eb_request_v2(
                 log_message = results[0][1]["value"]
             except IndexError:
                 raise utils.ObjectDoesNotExistError(
-                    f"Log message matching 'Function result' and test_run_id {test_run_id} not "
+                    f"Log message matching '{utils.FUNCTION_RESULT_STR}' and test_run_id {test_run_id} not "
                     f"found in log_group_name {lambda_name}",
                     details=dict(),
                 )
