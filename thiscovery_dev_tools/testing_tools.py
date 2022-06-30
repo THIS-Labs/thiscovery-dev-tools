@@ -102,6 +102,13 @@ def tests_running_on_aws():
         )
 
 
+def tests_running_on_github_actions():
+    """
+    Checks if tests are running in a GitHub Actions job
+    """
+    return os.environ.get("DEPLOYMENT_METHOD") == "github_actions"
+
+
 class BaseDdbMixin:
     @classmethod
     def get_ddb_client(cls, stack_name):
@@ -373,6 +380,7 @@ def test_eb_request_v2(
     lambda_name: str,
     stack_name: str,
     aws_processing_delay: int = 0,
+    **kwargs,
 ):
     """
     Test processes triggered via EventBridge
@@ -383,6 +391,11 @@ def test_eb_request_v2(
         lambda_name: resource name of AWS lambda that will be processing event
         stack_name: name of stack lambda_name belongs to
         aws_processing_delay: time in seconds to wait before fetching logs
+        kwargs:
+            force_query (bool): if True, fallback of querying logs using CloudWatch Log Insights
+                will be used even if quicker method of finding target message in latest log stream
+                is successful. This option is intended for use only in unittests, so that the
+                fallback option can be tested.
 
     Returns:
         Return value of local_method or AWS Lambda, which are the same because
@@ -392,31 +405,59 @@ def test_eb_request_v2(
         test_run_id = str(utils.new_correlation_id())
         aws_eb_event["detail"]["debug_test_run_id"] = test_run_id
         te = ThiscoveryEvent(event=aws_eb_event)
-        earliest_log_time = utils.utc_now_timestamp() * 1000  # milliseconds
+        earliest_log_time = int(utils.utc_now_timestamp() * 1000)  # milliseconds
         result = te.put_event()
         assert (
             result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
         ), "Failed to post event to event bus"
         time.sleep(aws_processing_delay)
         logs_client = CloudWatchLogsClient()
+        query_list = [test_run_id, utils.FUNCTION_RESULT_STR]
         log_message = logs_client.find_in_log_message(
             log_group_name=lambda_name,
-            query_string=[test_run_id, "Function result"],
+            query_string=query_list,
             stack_name=stack_name,
             earliest_log=earliest_log_time,
         )
         log_message_re = re.compile("\{.+", re.DOTALL)
         try:
             m = log_message_re.search(log_message)
+            if kwargs.get("force_query"):
+                raise TypeError
         except TypeError:
-            raise utils.ObjectDoesNotExistError(
-                f"Log message matching 'Function result' and test_run_id {test_run_id} not "
-                f"found in log_group_name {lambda_name}",
-                details=dict(),
+            # try querying just in case log_message we are looking for is in an older log stream
+            query_attempts = 0
+            logger = utils.get_logger()
+            logger.debug(
+                f"Log message matching '{utils.FUNCTION_RESULT_STR}' and test_run_id {test_run_id} not "
+                f"found in latest stream of log_group_name {lambda_name}. Attempting "
+                f"CloudWatch Log Insights querying. Please note that this is a slow process "
+                f"(your machine is probably NOT hanging)"
             )
-        else:
-            log_dict = json.loads(m.group())
-            return log_dict["result"]
+            time.sleep(60)  # no point attempting a query before a minute has elapsed
+            while query_attempts < 12:
+                results = logs_client.query_one_log_group(
+                    log_group_name=lambda_name,
+                    query_string=query_list,
+                    stack_name=stack_name,
+                    start_time=earliest_log_time,
+                )
+                if results:
+                    break
+                query_attempts += 1
+                time.sleep(10)
+            try:
+                log_message = results[0][1]["value"]
+            except IndexError:
+                raise utils.ObjectDoesNotExistError(
+                    f"Log message matching '{utils.FUNCTION_RESULT_STR}' and test_run_id {test_run_id} not "
+                    f"found in log_group_name {lambda_name}",
+                    details=dict(),
+                )
+            else:
+                m = log_message_re.search(log_message)
+        log_dict = json.loads(m.group())
+        return log_dict["result"]
     else:
         return local_method(aws_eb_event, dict())
 
