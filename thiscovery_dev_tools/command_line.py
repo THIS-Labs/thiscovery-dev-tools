@@ -34,6 +34,7 @@ def aws_deployer_build(args):
 def aws_deployer_deploy(args):
     deployer = AwsDeployer(stack_name=args.stack_name)
     deployer.deploy(confirm_cf_changeset=False)
+    deployer.log_deployment()
 
 
 def main():
