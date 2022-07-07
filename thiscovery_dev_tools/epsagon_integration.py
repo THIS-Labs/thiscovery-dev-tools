@@ -35,7 +35,8 @@ class EpsagonIntegration:
         self.epsagon_yaml = None  # edited by output_template
         self.environment = environment
 
-    def get_latest_epsagon_layer(self) -> tuple:
+    @staticmethod
+    def get_latest_epsagon_layer() -> tuple:
         region = "eu-west-1"
         r = requests.get(
             f"https://layers.epsagon.com/production?region={region}&name=epsagon-python-layer&max_items=1"
