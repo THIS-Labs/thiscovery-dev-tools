@@ -102,6 +102,14 @@ class AwsDeployer:
         environment = utils.namespace2name(secrets_namespace)
         return environment
 
+    def _get_epsagon_layer_version_number(self):
+        if self.epsagon_layer_version_number is None:
+            (
+                _,
+                self.epsagon_layer_version_number,
+            ) = ei.EpsagonIntegration.get_latest_epsagon_layer()
+        return self.epsagon_layer_version_number
+
     def thiscovery_lib_master_revision(self):
         lib_ls = subprocess.run(
             [
@@ -300,6 +308,7 @@ class AwsDeployer:
         """
         self.logger.info("Posting deployment event")
         self.thiscovery_lib_master_revision()
+        self._get_epsagon_layer_version_number()
         deployment_dict = {
             "source": "aws_deployer",
             "detail-type": "deployment",
