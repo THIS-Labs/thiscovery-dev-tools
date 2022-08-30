@@ -19,6 +19,7 @@ import local.dev_config  # sets env variable 'TEST_ON_AWS'
 import local.secrets  # sets AWS profile as env variable
 import thiscovery_dev_tools.testing_tools as test_tools
 import unittest
+from datetime import datetime
 from http import HTTPStatus
 
 
@@ -34,8 +35,10 @@ class EbRequestTestCase(test_tools.BaseTestCase):
     """
 
     test_event = {
+        "id": "test",
         "detail-type": "test_event",
         "detail": {
+            "data": {"date": str(datetime.now()), "type": "test"},
             "appointment_id": 123456,
             "user_id": "f2fac677-cb2c-42a0-9fa6-494059352569",
         },
@@ -62,5 +65,16 @@ class EbRequestTestCase(test_tools.BaseTestCase):
             stack_name="thiscovery-events",
             aws_processing_delay=5,
             force_query=True,
+        )
+        self.assertEqual(HTTPStatus.OK, result["statusCode"])
+
+    def test_eb_request_v2_event_bus_name(self):
+        result = test_tools.test_eb_request_v2(
+            local_method="Not applicable",
+            aws_eb_event=self.test_event,
+            lambda_name="PersistAuth0Event",
+            stack_name="thiscovery-monitoring",
+            aws_processing_delay=5,
+            event_bus_name="auth0-event-bus",
         )
         self.assertEqual(HTTPStatus.OK, result["statusCode"])
