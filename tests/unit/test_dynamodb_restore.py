@@ -100,7 +100,7 @@ class DdbRestoreTestCase(test_tools.BaseTestCase):
     def test_restore_table_ok(self):
         self.put_test_items(10, "_original_item")
         time.sleep(5)  # allow a few seconds for PITR backup to be created
-        one_second_ago = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        one_second_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=1)
 
         # delete a few items; these should be restored
         self.ddb.delete_item(
