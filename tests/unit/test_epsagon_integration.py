@@ -30,15 +30,6 @@ TEST_DATA_FOLDER = os.path.join(
 )
 
 
-class YamlTestCase(unittest.TestCase):
-    def test_decode_code_ok(self):
-        test_template_file = os.path.join(TEST_DATA_FOLDER, "raw_template_01.yaml")
-        with open(test_template_file) as f:
-            test_template = f.read()
-        test_template_dict = cfn_flip.to_json(test_template)
-        self.assertEqual(test_template, cfn_flip.to_yaml(test_template_dict))
-
-
 class EpsagonIntTestCase(unittest.TestCase):
     def test_init_ok(self):
         with open(os.path.join(TEST_DATA_FOLDER, "raw_template_01.yaml")) as f:

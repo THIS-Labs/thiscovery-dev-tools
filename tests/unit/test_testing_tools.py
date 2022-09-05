@@ -20,6 +20,7 @@ import local.secrets  # sets AWS profile as env variable
 import thiscovery_dev_tools.testing_tools as test_tools
 import unittest
 from http import HTTPStatus
+from thiscovery_dev_tools.test_data.auth0_events import SUCCESSFUL_LOGIN
 
 
 @unittest.skipIf(
@@ -62,5 +63,19 @@ class EbRequestTestCase(test_tools.BaseTestCase):
             stack_name="thiscovery-events",
             aws_processing_delay=5,
             force_query=True,
+        )
+        self.assertEqual(HTTPStatus.OK, result["statusCode"])
+
+    def test_eb_request_v2_event_bus_name(self):
+        auth0_event_data = SUCCESSFUL_LOGIN
+        # source must be removed for the event to trigger the lambda function
+        del auth0_event_data["source"]
+        result = test_tools.test_eb_request_v2(
+            local_method="Not applicable",
+            aws_eb_event=auth0_event_data,
+            lambda_name="PersistAuth0Event",
+            stack_name="thiscovery-monitoring",
+            aws_processing_delay=5,
+            event_bus_name="auth0-event-bus",
         )
         self.assertEqual(HTTPStatus.OK, result["statusCode"])

@@ -380,6 +380,7 @@ def test_eb_request_v2(
     lambda_name: str,
     stack_name: str,
     aws_processing_delay: int = 0,
+    event_bus_name: str = "thiscovery-event-bus",
     **kwargs,
 ):
     """
@@ -406,7 +407,7 @@ def test_eb_request_v2(
         aws_eb_event["detail"]["debug_test_run_id"] = test_run_id
         te = ThiscoveryEvent(event=aws_eb_event)
         earliest_log_time = int(utils.utc_now_timestamp() * 1000)  # milliseconds
-        result = te.put_event()
+        result = te.put_event(event_bus_name)
         assert (
             result["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
         ), "Failed to post event to event bus"
