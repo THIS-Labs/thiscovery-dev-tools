@@ -173,13 +173,15 @@ class BaseTestCase(unittest.TestCase):
             )
 
         # deprecation warnings handling (inspired by https://stackoverflow.com/a/67484991)
-        allow_deprecation_list = json.loads(os.environ.get("ALLOW_DEPRECATION", "null"))
-        warnings.filterwarnings("error", category=DeprecationWarning)
-        if allow_deprecation_list:
-            for module in allow_deprecation_list:
-                warnings.filterwarnings(
-                    "default", category=DeprecationWarning, module=module
-                )
+        if os.environ.get("GITHUB_ACTION") is None:
+            # Don't fail for deprecated endpoints when running CI/CD
+            allow_deprecation_list = json.loads(os.environ.get("ALLOW_DEPRECATION", "null"))
+            warnings.filterwarnings("error", category=DeprecationWarning)
+            if allow_deprecation_list:
+                for module in allow_deprecation_list:
+                    warnings.filterwarnings(
+                        "default", category=DeprecationWarning, module=module
+                    )
 
         utils.set_running_unit_tests(True)
         cls.logger = utils.get_logger()
