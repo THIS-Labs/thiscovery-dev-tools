@@ -27,7 +27,7 @@ from thiscovery_dev_tools.aws_deployer import AwsDeployer
 def aws_deployer_build(args):
     deployer = AwsDeployer(stack_name=None)  # stack_name not needed for build
     deployer.parse_sam_template()
-    deployer.validate_template()
+    # deployer.validate_template()
     deployer.build(build_in_container=True)
 
 
