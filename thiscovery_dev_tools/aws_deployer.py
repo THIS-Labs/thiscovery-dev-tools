@@ -341,8 +341,8 @@ class AwsDeployer:
             self.deployment_confirmation()
         if not kwargs.get("skip_build", False):
             self.parse_sam_template()
-            # if self.stack_name != "thiscovery-core":
-            #     self.validate_template()
+            if self.stack_name != "thiscovery-core":
+                self.validate_template()
             self.build(kwargs.get("build_in_container", False))
         self.deploy(kwargs.get("confirm_cf_changes", False))
         self.log_deployment()
