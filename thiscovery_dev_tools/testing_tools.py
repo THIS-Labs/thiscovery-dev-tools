@@ -120,10 +120,10 @@ class BaseDdbMixin:
     @classmethod
     def set_notifications_table(cls):
         try:
-            cls.notifications_table = f"thiscovery-core-{cls.env_name}-notifications"
+            cls.notifications_table = f"thiscovery-crm-{cls.env_name}-notifications"
         except AttributeError:
             cls.env_name = utils.get_environment_name()
-            cls.notifications_table = f"thiscovery-core-{cls.env_name}-notifications"
+            cls.notifications_table = f"thiscovery-crm-{cls.env_name}-notifications"
 
     @classmethod
     def clear_notifications_table(cls):
