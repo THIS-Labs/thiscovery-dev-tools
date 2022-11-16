@@ -10,23 +10,25 @@ secrets.py will need adding/updating
 import local.secrets  # sets env variables
 import local.dev_config as conf  # sets env variables
 
-
+from thiscovery_lib.utilities import namespace2profile
 import boto3
 
 
-def get_client(profile_name):
+def get_client(profile):
     """
-    :param profile_name: A profile name in your AWS credentials file
+    :param profile: profile name, eg test-sem86
     :return:
     """
+
+    profile_name = namespace2profile('/' + profile + '/')
     session = boto3.Session(profile_name=profile_name)
     return session.client("ssm", region_name="eu-west-1")
 
 
 if __name__ == "__main__":
 
-    source_client = get_client(conf.SOURCE_PROFILE)
-    target_client = get_client(conf.TARGET_PROFILE)
+    source_client = get_client(conf.SOURCE_ENV)
+    target_client = get_client(conf.TARGET_ENV)
 
     paginator = source_client.get_paginator("get_parameters_by_path")
 
