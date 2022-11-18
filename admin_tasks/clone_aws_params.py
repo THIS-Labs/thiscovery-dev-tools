@@ -1,39 +1,47 @@
 """
 Clone parameters from one AWS dev account to another.
 
+Skips any parameters that already exist. Note that the script will attempt to
+    reformat any params and values before it copies, but may then skip if it
+    already exists.
+
 This is needed for before any thiscovery stack is deployed to AWS.
 
 secrets.py will need adding/updating
 .aws/credentials will need details of both the source and target accounts
 
 """
-import local.secrets  # sets env variables
-import local.dev_config as conf  # sets env variables
-
 
 import boto3
 
+import local.secrets  # sets env variables
+import local.dev_config as conf  # sets env variables
 
-def get_client(profile_name):
+from thiscovery_lib.utilities import namespace2profile
+
+
+def get_client(profile):
     """
-    :param profile_name: A profile name in your AWS credentials file
+    :param profile: profile name, eg test-sem86
     :return:
     """
+
+    profile_name = namespace2profile('/' + profile + '/')
     session = boto3.Session(profile_name=profile_name)
     return session.client("ssm", region_name="eu-west-1")
 
 
 if __name__ == "__main__":
 
-    source_client = get_client(conf.SOURCE_PROFILE)
-    target_client = get_client(conf.TARGET_PROFILE)
+    source_client = get_client(conf.SOURCE_ENV)
+    target_client = get_client(conf.TARGET_ENV)
 
     paginator = source_client.get_paginator("get_parameters_by_path")
 
     for page in paginator.paginate(
-        Path=f"/{conf.SOURCE_ENV}/",  # SOURCE_ENV is e.g. dev-afs25, test-sem86, etc
-        WithDecryption=True,
-        Recursive=True,
+            Path=f"/{conf.SOURCE_ENV}/",  # SOURCE_ENV is e.g. dev-afs25, test-sem86, etc
+            WithDecryption=True,
+            Recursive=True,
     ):
         for param in page["Parameters"]:
             param_name = param["Name"]
