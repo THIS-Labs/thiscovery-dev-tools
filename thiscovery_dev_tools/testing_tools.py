@@ -110,6 +110,8 @@ def tests_running_on_github_actions():
 
 
 class BaseDdbMixin:
+    ddb_client = Dynamodb()
+
     @classmethod
     def get_ddb_client(cls, stack_name):
         try:
