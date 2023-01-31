@@ -384,7 +384,7 @@ def test_eb_request_v2(
     **kwargs,
 ):
     """
-    Test processes triggered via EventBridge. Puts a fake event on the
+    Test processes triggered via EventBridge. Puts an event on the
     EventBridge so that the lambda being tested can pick it up.
 
     If running on AWS:
