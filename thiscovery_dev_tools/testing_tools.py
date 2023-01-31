@@ -399,7 +399,7 @@ def test_eb_request_v2(
 
     Args:
         local_method: function to be called when testing locally
-        aws_eb_event: event to be posted to EventBus when testing on AWS
+        aws_eb_event: event to be posted to EventBridge when testing on AWS
         lambda_name: resource name of AWS lambda that will be processing event
             This will be something like 'UserConsent'
         stack_name: name of stack lambda_name belongs to
