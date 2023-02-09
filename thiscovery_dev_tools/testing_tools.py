@@ -384,12 +384,24 @@ def test_eb_request_v2(
     **kwargs,
 ):
     """
-    Test processes triggered via EventBridge
+    Test processes triggered via EventBridge. Puts an event on the
+    EventBridge so that the lambda being tested can pick it up.
+
+    If running on AWS:
+        - post to EventBus
+        (- the lambda under test should pick up this event)
+        - check latest log stream for the lambda's log group. Look for the log
+            that says the lambda finished executing.
+        - if the log is not there, check the whole log group for the log.
+            This is a time-consuming process
+    If using local method:
+        - run local method
 
     Args:
         local_method: function to be called when testing locally
-        aws_eb_event: event to be posted to event bus when testing on AWS
+        aws_eb_event: event to be posted to EventBridge when testing on AWS
         lambda_name: resource name of AWS lambda that will be processing event
+            This will be something like 'UserConsent'
         stack_name: name of stack lambda_name belongs to
         aws_processing_delay: time in seconds to wait before fetching logs
         kwargs:
