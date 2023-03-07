@@ -59,6 +59,13 @@ def main():
         metavar="stack_name",
         help="Name of stack being deployed",
     )
+    parser_deploy.add_argument(
+        "-o",
+        "--iam_capability_type",
+        help="capabilities type when running sam deploy. Use "
+             "CAPABILITY_NAMED_IAM for example."
+             "Defaults to CAPABILITY_IAM"
+    )
     parser_deploy.set_defaults(func=aws_deployer_deploy)
 
     args = parser.parse_args()
