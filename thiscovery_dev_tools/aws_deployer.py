@@ -200,7 +200,7 @@ class AwsDeployer:
             param_overrides_str += f"ParameterKey={k},ParameterValue={v} "
         return f'"{param_overrides_str.strip()}"'
 
-    def deploy(self, confirm_cf_changeset):
+    def deploy(self, confirm_cf_changeset, iam_capability_type="CAPABILITY_IAM"):
         self.logger.info("Starting deployment phase")
         deployment_method = os.environ.get("DEPLOYMENT_METHOD")
         if deployment_method == "github_actions":
@@ -215,7 +215,7 @@ class AwsDeployer:
                 "--s3-bucket",
                 os.environ["ARTIFACTS_BUCKET"],
                 "--capabilities",
-                "CAPABILITY_NAMED_IAM",
+                iam_capability_type,
                 "--no-fail-on-empty-changeset",
                 "--stack-name",
                 f"{self.stack_name}-{self.environment}",
@@ -344,7 +344,10 @@ class AwsDeployer:
             if self.stack_name != "thiscovery-core":
                 self.validate_template()
             self.build(kwargs.get("build_in_container", False))
-        self.deploy(kwargs.get("confirm_cf_changes", False))
+        self.deploy(
+            kwargs.get("confirm_cf_changes", False),
+            kwargs.get("iam_capability_type", "CAPABILITY_IAM"),
+        )
         self.log_deployment()
         if not kwargs.get("skip_slack_notification", False):
             self.slack_message()
