@@ -215,7 +215,7 @@ class AwsDeployer:
                 "--s3-bucket",
                 os.environ["ARTIFACTS_BUCKET"],
                 "--capabilities",
-                iam_capability_type,
+                "CAPABILITY_NAMED_IAM",
                 "--no-fail-on-empty-changeset",
                 "--stack-name",
                 f"{self.stack_name}-{self.environment}",
