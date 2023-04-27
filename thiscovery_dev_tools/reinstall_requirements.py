@@ -36,6 +36,6 @@ if __name__ == "__main__":
     for l in lines:
 
         if l.startswith("https://github"):
-            uninstall(l.split("THIS-Institute/", 1)[1].split("/", 1)[0])
+            uninstall(l.split("THIS-Labs/", 1)[1].split("/", 1)[0])
 
             install(l)
