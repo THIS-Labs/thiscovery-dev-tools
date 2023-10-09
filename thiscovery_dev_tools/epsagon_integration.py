@@ -24,14 +24,15 @@ import requests
 
 from http import HTTPStatus
 
+from thiscovery_dev_tools.constants import EPSAGON_LAYER, EPSAGON_LAYER_ARN
+
 
 class EpsagonIntegration:
     def __init__(self, template_as_string, environment):
         self.t_dict = json.loads(cfn_flip.to_json(template_as_string))
-        (
-            self.epsagon_layer,
-            self.epsagon_layer_version_number,
-        ) = self.get_latest_epsagon_layer()
+
+        self.epsagon_layer_version_number = EPSAGON_LAYER
+        self.epsagon_layer = EPSAGON_LAYER_ARN
         self.epsagon_yaml = None  # edited by output_template
         self.environment = environment
 

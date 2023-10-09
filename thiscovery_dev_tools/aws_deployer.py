@@ -28,6 +28,7 @@ import thiscovery_lib.utilities as utils
 
 import thiscovery_dev_tools.epsagon_integration as ei
 from thiscovery_dev_tools.cloudformation_utilities import CloudFormationClient
+from thiscovery_dev_tools.constants import EPSAGON_LAYER
 
 
 class AwsDeployer:
@@ -308,7 +309,7 @@ class AwsDeployer:
         """
         self.logger.info("Posting deployment event")
         self.thiscovery_lib_master_revision()
-        self._get_epsagon_layer_version_number()
+        self.epsagon_layer_version_number = EPSAGON_LAYER
         deployment_dict = {
             "source": "aws_deployer",
             "detail-type": "deployment",
