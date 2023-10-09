@@ -14,3 +14,14 @@ into the env of other stacks.
 Run the command:
 
 `pip install https://github.com/THIS-Institute/thiscovery-dev-tools/archive/master.zip`
+
+## thiscovery deploy
+
+`setup.py` is what is run when this package is installed into each repo. It
+gives access to the `thiscovery deploy`command.
+
+This `thiscovery deploy`command is run from the `feature.yaml` scripts of each
+repo during CICD.
+
+The functionality of `thiscovery deploy` is in the main() function of
+`command_line.py`.
