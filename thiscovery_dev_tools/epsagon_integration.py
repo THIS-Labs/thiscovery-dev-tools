@@ -88,5 +88,4 @@ class EpsagonIntegration:
             f.write(self.epsagon_yaml)
 
     def main(self):
-        self.trace_lambdas()
         self.output_template()
