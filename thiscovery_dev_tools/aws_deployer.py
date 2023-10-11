@@ -292,9 +292,6 @@ class AwsDeployer:
             template_as_string=self._template_yaml, environment=self.environment
         )
         epsagon_integration.main()
-        # self.epsagon_layer_version_number = (
-        #     epsagon_integration.epsagon_layer_version_number
-        # )
         self.logger.info("Ended template parsing phase")
 
     def validate_template(self):
