@@ -26,7 +26,9 @@ import thiscovery_lib.eb_utilities as eb_utils
 import thiscovery_lib.ssm_utilities as ssm_utils
 import thiscovery_lib.utilities as utils
 
+import thiscovery_dev_tools.epsagon_integration as ei
 from thiscovery_dev_tools.cloudformation_utilities import CloudFormationClient
+from thiscovery_dev_tools.constants import EPSAGON_LAYER
 
 
 class AwsDeployer:
@@ -50,6 +52,7 @@ class AwsDeployer:
         self.logger = utils.get_logger()
         self.ssm_client = ssm_utils.SsmClient()
         self.cf_client = CloudFormationClient()
+        self.epsagon_layer_version_number = None
         self.thiscovery_lib_revision = None
 
     @staticmethod
@@ -99,6 +102,14 @@ class AwsDeployer:
             )
         environment = utils.namespace2name(secrets_namespace)
         return environment
+
+    def _get_epsagon_layer_version_number(self):
+        if self.epsagon_layer_version_number is None:
+            (
+                _,
+                self.epsagon_layer_version_number,
+            ) = ei.EpsagonIntegration.get_latest_epsagon_layer()
+        return self.epsagon_layer_version_number
 
     def thiscovery_lib_master_revision(self):
         lib_ls = subprocess.run(
@@ -277,6 +288,13 @@ class AwsDeployer:
     def parse_sam_template(self):
         self.logger.info("Starting template parsing phase")
         self.parse_provisioned_concurrency_setting()
+        epsagon_integration = ei.EpsagonIntegration(
+            template_as_string=self._template_yaml, environment=self.environment
+        )
+        epsagon_integration.main()
+        # self.epsagon_layer_version_number = (
+        #     epsagon_integration.epsagon_layer_version_number
+        # )
         self.logger.info("Ended template parsing phase")
 
     def validate_template(self):
@@ -291,6 +309,7 @@ class AwsDeployer:
         """
         self.logger.info("Posting deployment event")
         self.thiscovery_lib_master_revision()
+        self.epsagon_layer_version_number = EPSAGON_LAYER
         deployment_dict = {
             "source": "aws_deployer",
             "detail-type": "deployment",
@@ -299,6 +318,7 @@ class AwsDeployer:
                 "environment": self.environment,
                 "revision": self.revision,
                 "branch": self.branch,
+                "epsagon_layer_version": self.epsagon_layer_version_number,
                 "thiscovery_lib_revision": self.thiscovery_lib_revision,
             },
         }
