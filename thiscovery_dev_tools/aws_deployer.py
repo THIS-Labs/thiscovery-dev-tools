@@ -27,6 +27,7 @@ import thiscovery_lib.ssm_utilities as ssm_utils
 import thiscovery_lib.utilities as utils
 
 import thiscovery_dev_tools.epsagon_integration as ei
+from thiscovery_dev_tools import sentry_integration as si
 from thiscovery_dev_tools.cloudformation_utilities import CloudFormationClient
 from thiscovery_dev_tools.constants import EPSAGON_LAYER
 
@@ -292,6 +293,10 @@ class AwsDeployer:
             template_as_string=self._template_yaml, environment=self.environment
         )
         epsagon_integration.main()
+        sentry_integration = si.SentryIntegration(
+            template_as_string=self._template_yaml, environment=self.environment
+        )
+        sentry_integration.main()
         self.logger.info("Ended template parsing phase")
 
     def validate_template(self):
