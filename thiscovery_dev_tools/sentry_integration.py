@@ -1,11 +1,10 @@
+import cfn_flip
 import copy
-from http import HTTPStatus
 import json
 import os
-
-import cfn_flip
-
 from thiscovery_dev_tools.constants import SENTRY_LAYER_ARN, SENTRY_LAYER
+from typing import Any
+
 
 class SentryIntegration:
     def __init__(self, template_as_string, environment):
@@ -15,9 +14,22 @@ class SentryIntegration:
         self.sentry_layer = SENTRY_LAYER_ARN
         self.environment = environment
 
-    def add_tracing_to_lambda(self, lambda_definition: dict) -> dict:
+    def add_tracing_to_lambda(
+        self, lambda_definition: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Add Sentry layer and Sentry environment variables to lambda
+        definition
+
+        Args:
+            lambda_definition: SAM lambda definition in dict format
+                (converted from yaml using cfn_flip)
+
+        Returns: modified lambda_definition with Sentry layer and variables
+            appended
+        """
         prop = lambda_definition["Properties"]
-        prop["Layers"] = [self.sentry_layer]
+        prop["Layers"] = prop.get("Layers", list()) + [self.sentry_layer]
 
         try:
             env = prop["Environment"]
@@ -33,7 +45,9 @@ class SentryIntegration:
 
         handler = prop["Handler"]
         actual_handler = copy.copy(handler)
-        prop["Handler"] = "sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler"
+        prop[
+            "Handler"
+        ] = "sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler"
         env_variables["SENTRY_INITIAL_HANDLER"] = actual_handler
         env_variables["SENTRY_TRACES_SAMPLE_RATE"] = 1
         env_variables[
@@ -41,7 +55,12 @@ class SentryIntegration:
         ] = f"{{{{resolve:secretsmanager:/{self.environment}/sentry-connection:SecretString:dsn}}}}"
         return lambda_definition
 
-    def trace_lambdas(self):
+    def trace_lambdas(self) -> None:
+        """
+        Iterates through every resource definition in SAM template,
+        calling self.add_tracing_to_lambda for each lambda function
+        definition found.
+        """
         resources = self.t_dict["Resources"]
         for k, v in resources.items():
             if v.get("Type") == "AWS::Serverless::Function":
