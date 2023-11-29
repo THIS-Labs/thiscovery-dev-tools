@@ -3,7 +3,7 @@ import copy
 import json
 import os
 from thiscovery_dev_tools.constants import SENTRY_LAYER_ARN, SENTRY_LAYER
-from typing import Any
+from typing import Any, Dict
 
 
 class SentryIntegration:
@@ -15,8 +15,8 @@ class SentryIntegration:
         self.environment = environment
 
     def add_tracing_to_lambda(
-        self, lambda_definition: dict[str, Any]
-    ) -> dict[str, Any]:
+        self, lambda_definition: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Add Sentry layer and Sentry environment variables to lambda
         definition
