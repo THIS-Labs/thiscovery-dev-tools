@@ -26,23 +26,19 @@ class SentryIntegrationTestCase(test_tools.BaseTestCase):
 
         sentry_intergration = SentryIntegration(json.dumps(template), "")
 
-        with patch('builtins.open', mock_open()) as m:
+        with patch("builtins.open", mock_open()) as m:
             sentry_intergration.output_template()
-        
+
         handle = m()
         handle.write.assert_called_once_with(
-            'Resources:\n  test:\n    Type: AWS::Serverless::Function\n'
+            "Resources:\n  test:\n    Type: AWS::Serverless::Function\n"
         )
 
-    @patch("thiscovery_dev_tools.sentry_integration.SentryIntegration.add_tracing_to_lambda")
+    @patch(
+        "thiscovery_dev_tools.sentry_integration.SentryIntegration.add_tracing_to_lambda"
+    )
     def test_trace_lambdas(self, mocked_add_tracing_to_lambda):
-        template = {
-            "Resources": {
-                "test": {
-                    "Type": "AWS::Serverless::Function"
-                }
-            }
-        }
+        template = {"Resources": {"test": {"Type": "AWS::Serverless::Function"}}}
 
         sentry_integration = SentryIntegration(json.dumps(template), "")
         sentry_integration.trace_lambdas()
@@ -54,9 +50,7 @@ class SentryIntegrationTestCase(test_tools.BaseTestCase):
             "Resources": {
                 "test": {
                     "Type": "AWS::Serverless::Function",
-                    "Properties": {
-                        "Handler": "test.handler"
-                    }
+                    "Properties": {"Handler": "test.handler"},
                 }
             }
         }
@@ -67,17 +61,58 @@ class SentryIntegrationTestCase(test_tools.BaseTestCase):
         self.assertEqual(
             result,
             {
-                'Type': 'AWS::Serverless::Function',
-                'Properties': {
-                    'Handler': 'sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler',
-                    'Layers': ['arn:aws:lambda:eu-west-1:943013980633:layer:SentryPythonServerlessSDK:76'],
-                    'Environment': {
-                        'Variables': {
-                            'SENTRY_INITIAL_HANDLER': 'test.handler',
-                            'SENTRY_TRACES_SAMPLE_RATE': 1,
-                            'SENTRY_DSN': '{{resolve:secretsmanager://sentry-connection:SecretString:dsn}}'
+                "Type": "AWS::Serverless::Function",
+                "Properties": {
+                    "Handler": "sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler",
+                    "Layers": [
+                        "arn:aws:lambda:eu-west-1:943013980633:layer:SentryPythonServerlessSDK:76"
+                    ],
+                    "Environment": {
+                        "Variables": {
+                            "SENTRY_INITIAL_HANDLER": "test.handler",
+                            "SENTRY_TRACES_SAMPLE_RATE": 1,
+                            "SENTRY_DSN": "{{resolve:secretsmanager://sentry-connection:SecretString:dsn}}",
                         }
-                    }
+                    },
+                },
+            },
+        )
+
+    def test_add_tracing_preserves_existing_layers(self):
+        template = {
+            "Resources": {
+                "test": {
+                    "Type": "AWS::Serverless::Function",
+                    "Properties": {
+                        "Handler": "test.handler",
+                        "Layers": [{"Ref": "EventsCommonLayer"}],
+                    },
                 }
             }
+        }
+
+        expected_result = {
+            "Type": "AWS::Serverless::Function",
+            "Properties": {
+                "Handler": "sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler",
+                "Layers": [
+                    {"Ref": "EventsCommonLayer"},
+                    "arn:aws:lambda:eu-west-1:943013980633:layer:SentryPythonServerlessSDK:76",
+                ],
+                "Environment": {
+                    "Variables": {
+                        "SENTRY_INITIAL_HANDLER": "test.handler",
+                        "SENTRY_TRACES_SAMPLE_RATE": 1,
+                        "SENTRY_DSN": "{{resolve:secretsmanager://sentry-connection:SecretString:dsn}}",
+                    }
+                },
+            },
+        }
+
+        sentry_integration = SentryIntegration(json.dumps(template), "")
+        result = sentry_integration.add_tracing_to_lambda(template["Resources"]["test"])
+
+        self.assertEqual(
+            expected_result,
+            result,
         )

@@ -29,16 +29,20 @@ import thiscovery_lib.utilities as utils
 from thiscovery_dev_tools import sentry_integration as si
 from thiscovery_dev_tools.constants import SENTRY_LAYER
 from thiscovery_dev_tools.cloudformation_utilities import CloudFormationClient
+from typing import Optional
 
 
 class AwsDeployer:
     def __init__(
-        self, stack_name, param_overrides=None, sam_template_path="template.yaml"
+        self,
+        stack_name: str,
+        param_overrides: Optional[dict] = None,
+        sam_template_path: str = "template.yaml",
     ):
         """
         Args:
             stack_name:
-            param_overrides (dict): extra parameters to inject at deployment time;
+            param_overrides: extra parameters to inject at deployment time;
                     used by get_parameter_overrides method
         """
         self.stack_name = stack_name
@@ -107,7 +111,7 @@ class AwsDeployer:
             [
                 "git",
                 "ls-remote",
-                "https://github.com/THIS-Institute/thiscovery-lib.git",
+                "https://github.com/THIS-Labs/thiscovery-lib",
             ],
             capture_output=True,
             check=True,
