@@ -29,13 +29,13 @@ import thiscovery_lib.utilities as utils
 from thiscovery_dev_tools import sentry_integration as si
 from thiscovery_dev_tools.constants import SENTRY_LAYER
 from thiscovery_dev_tools.cloudformation_utilities import CloudFormationClient
-from typing import Optional
+from typing import Optional, Union
 
 
 class AwsDeployer:
     def __init__(
         self,
-        stack_name: str,
+        stack_name: Union[str, None],
         param_overrides: Optional[dict] = None,
         sam_template_path: str = "template.yaml",
     ):
