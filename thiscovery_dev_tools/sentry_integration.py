@@ -2,16 +2,18 @@ import cfn_flip
 import copy
 import json
 import os
-from thiscovery_dev_tools.constants import SENTRY_LAYER_ARN, SENTRY_LAYER
+from thiscovery_dev_tools.constants import (
+    SENTRY_PYTHON_LAYER_ARN,
+    SENTRY_NODE_LAYER_ARN,
+)
 from typing import Any, Dict
 
 
 class SentryIntegration:
     def __init__(self, template_as_string, environment):
         self.t_dict = json.loads(cfn_flip.to_json(template_as_string))
-
-        self.sentry_layer_version_number = SENTRY_LAYER
-        self.sentry_layer = SENTRY_LAYER_ARN
+        self.sentry_node_layer = SENTRY_NODE_LAYER_ARN
+        self.sentry_python_layer = SENTRY_PYTHON_LAYER_ARN
         self.environment = environment
 
     def add_tracing_to_lambda(
@@ -29,7 +31,6 @@ class SentryIntegration:
             appended
         """
         prop = lambda_definition["Properties"]
-        prop["Layers"] = prop.get("Layers", list()) + [self.sentry_layer]
 
         try:
             env = prop["Environment"]
@@ -43,12 +44,23 @@ class SentryIntegration:
             env["Variables"] = dict()
             env_variables = env["Variables"]
 
-        handler = prop["Handler"]
-        actual_handler = copy.copy(handler)
-        prop[
-            "Handler"
-        ] = "sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler"
-        env_variables["SENTRY_INITIAL_HANDLER"] = actual_handler
+        if "python" in prop.get("Runtime", ""):
+            # python runtimes require you to add the python sentry SDK layer,
+            # and swap the handler for the function to the sentry handler,
+            # storing the initial handler as an environment variable. See here:
+            # https://docs.sentry.io/platforms/python/integrations/aws-lambda/manual-layer/
+            prop["Layers"] = prop.get("Layers", list()) + [self.sentry_python_layer]
+            handler = prop["Handler"]
+            actual_handler = copy.copy(handler)
+            prop[
+                "Handler"
+            ] = "sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler"
+            env_variables["SENTRY_INITIAL_HANDLER"] = actual_handler
+        elif "node" in prop.get("Runtime", ""):
+            # Unlike python runtimes, Node runtimes simply require adding the
+            # node sentry SDK layer. See here:
+            # https://docs.sentry.io/platforms/node/guides/aws-lambda/layer/
+            prop["Layers"] = prop.get("Layers", list()) + [self.sentry_node_layer]
         env_variables["SENTRY_TRACES_SAMPLE_RATE"] = 1
         env_variables[
             "SENTRY_DSN"

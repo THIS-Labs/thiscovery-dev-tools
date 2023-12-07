@@ -27,7 +27,7 @@ import thiscovery_lib.ssm_utilities as ssm_utils
 import thiscovery_lib.utilities as utils
 
 from thiscovery_dev_tools import sentry_integration as si
-from thiscovery_dev_tools.constants import SENTRY_LAYER
+from thiscovery_dev_tools.constants import SENTRY_PYTHON_LAYER, SENTRY_NODE_LAYER
 from thiscovery_dev_tools.cloudformation_utilities import CloudFormationClient
 from typing import Optional, Union
 
@@ -301,7 +301,8 @@ class AwsDeployer:
         """
         self.logger.info("Posting deployment event")
         self.thiscovery_lib_master_revision()
-        self.sentry_layer_number = SENTRY_LAYER
+        self.sentry_python_layer_number = SENTRY_PYTHON_LAYER
+        self.sentry_node_layer_number = SENTRY_NODE_LAYER
         deployment_dict = {
             "source": "aws_deployer",
             "detail-type": "deployment",
@@ -310,7 +311,8 @@ class AwsDeployer:
                 "environment": self.environment,
                 "revision": self.revision,
                 "branch": self.branch,
-                "sentry_layer_version": self.sentry_layer_number,
+                "sentry_python_layer_version": self.sentry_python_layer_number,
+                "sentry_node_layer_version": self.sentry_node_layer_number,
                 "thiscovery_lib_revision": self.thiscovery_lib_revision,
             },
         }
