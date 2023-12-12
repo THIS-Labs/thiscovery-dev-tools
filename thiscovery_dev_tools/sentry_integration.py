@@ -17,7 +17,7 @@ class SentryIntegration:
         self.environment = environment
 
     def add_tracing_to_lambda(
-        self, lambda_definition: Dict[str, Any]
+        self, lambda_definition: Dict[str, Any], global_runtime: str
     ) -> Dict[str, Any]:
         """
         Add Sentry layer and Sentry environment variables to lambda
@@ -44,7 +44,11 @@ class SentryIntegration:
             env["Variables"] = dict()
             env_variables = env["Variables"]
 
-        if "python" in prop.get("Runtime", ""):
+        runtime = prop.get("Runtime", "")
+        if runtime == "":
+            runtime = global_runtime
+
+        if "python" in runtime:
             # python runtimes require you to add the python sentry SDK layer,
             # and swap the handler for the function to the sentry handler,
             # storing the initial handler as an environment variable. See here:
@@ -56,7 +60,7 @@ class SentryIntegration:
                 "Handler"
             ] = "sentry_sdk.integrations.init_serverless_sdk.sentry_lambda_handler"
             env_variables["SENTRY_INITIAL_HANDLER"] = actual_handler
-        elif "node" in prop.get("Runtime", ""):
+        elif "node" in runtime:
             # Unlike python runtimes, Node runtimes simply require adding the
             # node sentry SDK layer. See here:
             # https://docs.sentry.io/platforms/node/guides/aws-lambda/layer/
@@ -74,9 +78,17 @@ class SentryIntegration:
         definition found.
         """
         resources = self.t_dict["Resources"]
+        # Functions which use the globally defined runtime do not have
+        # the name of the runtime in the resource definition, so we need
+        # to fetch it here and pass it to the add_tracing_to_lambda function.
+        # However, we can't guarantee that this wil be defined, so we use get.
+        global_runtime = (
+            self.t_dict.get("Globals", {}).get("Function", {}).get("Runtime", "")
+        )
+
         for k, v in resources.items():
             if v.get("Type") == "AWS::Serverless::Function":
-                resources[k] = self.add_tracing_to_lambda(v)
+                resources[k] = self.add_tracing_to_lambda(v, global_runtime)
 
     def output_template(self):
         self.sentry_yaml = cfn_flip.to_yaml(json.dumps(self.t_dict))
