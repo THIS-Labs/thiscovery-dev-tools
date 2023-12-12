@@ -1,2 +1,5 @@
-SENTRY_LAYER = 76
-SENTRY_LAYER_ARN = f"arn:aws:lambda:eu-west-1:943013980633:layer:SentryPythonServerlessSDK:{SENTRY_LAYER}"
+SENTRY_PYTHON_LAYER = 76
+SENTRY_PYTHON_LAYER_ARN = f"arn:aws:lambda:eu-west-1:943013980633:layer:SentryPythonServerlessSDK:{SENTRY_PYTHON_LAYER}"
+
+SENTRY_NODE_LAYER = 193
+SENTRY_NODE_LAYER_ARN = f"arn:aws:lambda:eu-west-1:943013980633:layer:SentryNodeServerlessSDK:{SENTRY_NODE_LAYER}"
