@@ -183,9 +183,10 @@ class AwsDeployer:
         ]
         if build_in_container:
             command.append("--use-container")
-            if isinstance(container_env_vars, dict) and (
-                "GIT_PERSONAL_ACCESS_TOKEN" not in container_env_vars.keys()
-            ):
+            if (
+                isinstance(container_env_vars, dict)
+                and ("GIT_PERSONAL_ACCESS_TOKEN" not in container_env_vars.keys())
+            ) or not container_env_vars:
                 self.logger.info(
                     "Attempting to pass GIT_PERSONAL_ACCESS_TOKEN to build container as "
                     "that's usually required"
@@ -215,6 +216,8 @@ class AwsDeployer:
                     "Standard build strategy failed; attempting to build in Docker container"
                 )
                 self.build(build_in_container=True)
+            else:
+                raise
         self.logger.info("Finished building phase")
 
     def get_parameter_overrides(self):
