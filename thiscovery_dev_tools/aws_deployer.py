@@ -155,6 +155,14 @@ class AwsDeployer:
     def build(
         self, build_in_container: bool, container_env_vars: Optional[dict] = None
     ):
+        """
+        Calls "sam build"
+        (https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html)
+        Args:
+            build_in_container: invokes sam build with the --use-container option
+            container_env_vars: environment variables to pass to the build container
+        """
+
         def run_build(build_command):
             subprocess.run(
                 build_command,
@@ -175,6 +183,25 @@ class AwsDeployer:
         ]
         if build_in_container:
             command.append("--use-container")
+            if isinstance(container_env_vars, dict) and (
+                "GIT_PERSONAL_ACCESS_TOKEN" not in container_env_vars.keys()
+            ):
+                self.logger.info(
+                    "Attempting to pass GIT_PERSONAL_ACCESS_TOKEN to build container as "
+                    "that's usually required"
+                )
+                try:
+                    git_pat = os.environ["GIT_PERSONAL_ACCESS_TOKEN"]
+                except KeyError:
+                    self.logger.warning(
+                        "GIT_PERSONAL_ACCESS_TOKEN not found in environment variables. Build will"
+                        "fail if requirements include any private package"
+                    )
+                    git_pat = "Na"
+                command += [
+                    "--container-env-var",
+                    f"GIT_PERSONAL_ACCESS_TOKEN={git_pat}",
+                ]
 
         if container_env_vars:
             for k, v in container_env_vars.items():
@@ -187,20 +214,7 @@ class AwsDeployer:
                 self.logger.warning(
                     "Standard build strategy failed; attempting to build in Docker container"
                 )
-                try:
-                    git_pat = os.environ["GIT_PERSONAL_ACCESS_TOKEN"]
-                except KeyError:
-                    self.logger.warning(
-                        "GIT_PERSONAL_ACCESS_TOKEN not found in environment variables. Build will"
-                        "fail if requirements include any private package"
-                    )
-                    git_pat = "Na"
-                command += [
-                    "--use-container",
-                    "--container-env-var",
-                    f"GIT_PERSONAL_ACCESS_TOKEN={git_pat}",
-                ]
-                run_build(command)
+                self.build(build_in_container=True)
         self.logger.info("Finished building phase")
 
     def get_parameter_overrides(self):
@@ -345,6 +359,7 @@ class AwsDeployer:
         Args:
             **kwargs: confirm_cf_changeset (bool): confirm changes before deployment
                       build_in_container (bool): build in a Docker container
+                      container_env_var (dict): environment variables to pass to the Docker container
                       skip_build (bool): skip building phase
                       skip_confirmation (bool): skip deployment confirmation
                       skip_slack_notification (bool): skip slack notification
@@ -357,7 +372,9 @@ class AwsDeployer:
             self.parse_sam_template()
             if self.stack_name != "thiscovery-core":
                 self.validate_template()
-            self.build(kwargs.get("build_in_container", False))
+            self.build(
+                kwargs.get("build_in_container", False), kwargs.get("container_env_var")
+            )
         self.deploy(
             kwargs.get("confirm_cf_changes", False),
             kwargs.get("iam_capability_type", "CAPABILITY_IAM"),
