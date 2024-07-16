@@ -152,7 +152,9 @@ class AwsDeployer:
         if not proceed.lower() in ["y", "yes"]:
             sys.exit("Deployment aborted")
 
-    def build(self, build_in_container):
+    def build(
+        self, build_in_container: bool, container_env_vars: Optional[dict] = None
+    ):
         def run_build(build_command):
             subprocess.run(
                 build_command,
@@ -173,6 +175,11 @@ class AwsDeployer:
         ]
         if build_in_container:
             command.append("--use-container")
+
+        if container_env_vars:
+            for k, v in container_env_vars.items():
+                command += ["--container-env-var", f"{k}={v}"]
+
         try:
             run_build(command)
         except subprocess.CalledProcessError:
@@ -180,7 +187,19 @@ class AwsDeployer:
                 self.logger.warning(
                     "Standard build strategy failed; attempting to build in Docker container"
                 )
-                command.append("--use-container")
+                try:
+                    git_pat = os.environ["GIT_PERSONAL_ACCESS_TOKEN"]
+                except KeyError:
+                    self.logger.warning(
+                        "GIT_PERSONAL_ACCESS_TOKEN not found in environment variables. Build will"
+                        "fail if requirements include any private package"
+                    )
+                    git_pat = "Na"
+                command += [
+                    "--use-container",
+                    "--container-env-var",
+                    f"GIT_PERSONAL_ACCESS_TOKEN={git_pat}",
+                ]
                 run_build(command)
         self.logger.info("Finished building phase")
 
