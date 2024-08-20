@@ -123,3 +123,48 @@ SUCCESSFUL_REGISTRATION = {
     "version": "0",
     "account": "REDACTED",
 }
+
+SUCCESSFUL_VERIFICATION = {
+    "version": "0",
+    "id": "f622ae9e-d48b-e651-db3e-e83ea16e58b8",
+    "detail-type": "Auth0 log",
+    "source": "aws.partner/auth0.com/thiscovery-18bef42e-b354-431d-986c-d3f0207cb5d5/auth0.logs",
+    "account": "REDACTED",
+    "time": "2024-08-19T13:10:45Z",
+    "region": "REDACTED",
+    "resources": [],
+    "detail": {
+        "log_id": "90020240819131045716103000000000000001223372090513925864",
+        "data": {
+            "client_id": "REDACTED",
+            "client_name": "Thiscovery",
+            "connection": "Username-Password-Authentication",
+            "connection_id": "REDACTED",
+            "date": "2024-08-19T13:10:45.657Z",
+            "description": "Your email was verified. You can continue using the application.",
+            "details": {
+                "email": "clive@email.co.uk",
+                "query": {
+                    "client_id": "REDACTED",
+                    "connection": "Username-Password-Authentication",
+                    "email": "clive@email.co.uk",
+                    "idp_user_id": None,
+                    "includeEmailInRedirect": True,
+                    "resultUrl": "REDACTED",
+                    "tenant": "thiscovery",
+                    "user_id": "auth0|1234abcd",
+                },
+            },
+            "ip": "REDACTED",
+            "strategy": "auth0",
+            "strategy_type": "database",
+            "type": "sv",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+            "user_id": "auth0|1234abcd",
+            "user_name": "clive@email.co.uk",
+            "log_id": "90020240819131045716103000000000000001223372090513925864",
+            "tenant_name": "thiscovery",
+        },
+    },
+}
