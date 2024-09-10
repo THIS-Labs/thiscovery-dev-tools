@@ -13,7 +13,7 @@ into the env of other stacks.
 
 Run the command:
 
-`pip install https://github.com/THIS-Institute/thiscovery-dev-tools/archive/master.zip`
+`pip install https://github.com/THIS-Labs/thiscovery-dev-tools/archive/master.zip`
 
 ## thiscovery deploy
 
